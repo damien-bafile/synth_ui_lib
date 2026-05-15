@@ -6,6 +6,7 @@ set(CMAKE_C_STANDARD 11)
 add_library(${PROJECT_NAME} SHARED src/ui.c)
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 set_target_properties(${PROJECT_NAME} PROPERTIES
+  PREFIX ""
   OUTPUT_NAME synth_ui
   SUFFIX ".dylib"
 )
