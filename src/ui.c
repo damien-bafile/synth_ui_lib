@@ -17,7 +17,7 @@ static inline void pack_rgb565(uint8_t* dst, uint16_t color) {
 
 void ui_set_pixel(ui_fb_t* fb, int x, int y, uint16_t color) {
   if (x < 0 || x >= fb->width || y < 0 || y >= fb->height) return;
-  pack_rgb565(fb->data + ((fb->height - 1 - y) * fb->width + x) * 2, color);
+  pack_rgb565(fb->data + (y * fb->width + x) * 2, color);
 }
 
 void ui_fill_rect(ui_fb_t* fb, int x, int y, int w, int h, uint16_t color) {
@@ -30,7 +30,7 @@ void ui_fill_rect(ui_fb_t* fb, int x, int y, int w, int h, uint16_t color) {
   uint8_t hi = (color >> 8) & 0xFF;
 
   for (int cy = y0; cy < y1; cy++) {
-    int fb_row = fb->height - 1 - cy;
+    int fb_row = cy;
     uint8_t* line = fb->data + (fb_row * fb->width + x0) * 2;
     for (int col = x0; col < x1; col++) {
       *line++ = lo;
@@ -90,7 +90,7 @@ void ui_grid_cell(int* ox, int* oy, int* ow, int* oh,
   *ow = col_w;
   *oh = row_h;
   *ox = col * col_w + padding;
-  *oy = (rows - 1 - row) * row_h + padding;
+  *oy = row * row_h + padding;
   *ow -= padding * 2;
   *oh -= padding * 2;
 }
