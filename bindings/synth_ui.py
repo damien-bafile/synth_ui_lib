@@ -10,7 +10,7 @@ Usage:
 
 import ctypes
 import os
-from ctypes import POINTER, c_char_p, c_int, c_uint16, c_void_p
+from ctypes import POINTER, c_char_p, c_int, c_uint16, c_uint8, c_void_p
 
 _LIB = None
 
@@ -18,6 +18,17 @@ _LIB = None
 # Priority: SYNTH_UI_PATH env var, then ~/Dev/synth_ui_lib/build/synth_ui.dylib
 _DEFAULT_PATH = os.path.expanduser("~/Dev/synth_ui_lib/build/synth_ui.dylib")
 _LIB_PATH = os.environ.get("SYNTH_UI_PATH", _DEFAULT_PATH)
+
+
+class ui_fb_t(ctypes.Structure):
+    _fields_ = [
+        ("data", POINTER(c_uint8)),
+        ("width", c_int),
+        ("height", c_int),
+    ]
+
+
+_P_UI_FB = POINTER(ui_fb_t)
 
 
 def _load():
@@ -30,12 +41,12 @@ def _load():
             f"Run: cmake -B build -S ~/Dev/synth_ui_lib && cmake --build ~/Dev/synth_ui_lib/build"
         )
     _LIB = ctypes.CDLL(_LIB_PATH)
-    _LIB.ui_set_pixel.argtypes = [c_void_p, c_int, c_int, c_uint16]
-    _LIB.ui_fill_rect.argtypes = [c_void_p, c_int, c_int, c_int, c_int, c_uint16]
-    _LIB.ui_draw_rect.argtypes = [c_void_p, c_int, c_int, c_int, c_int, c_uint16]
-    _LIB.ui_fill_screen.argtypes = [c_void_p, c_uint16]
-    _LIB.ui_draw_char.argtypes = [c_void_p, c_int, c_int, c_char_p, c_uint16, c_uint16]
-    _LIB.ui_draw_text.argtypes = [c_void_p, c_int, c_int, c_char_p, c_uint16, c_uint16]
+    _LIB.ui_set_pixel.argtypes = [_P_UI_FB, c_int, c_int, c_uint16]
+    _LIB.ui_fill_rect.argtypes = [_P_UI_FB, c_int, c_int, c_int, c_int, c_uint16]
+    _LIB.ui_draw_rect.argtypes = [_P_UI_FB, c_int, c_int, c_int, c_int, c_uint16]
+    _LIB.ui_fill_screen.argtypes = [_P_UI_FB, c_uint16]
+    _LIB.ui_draw_char.argtypes = [_P_UI_FB, c_int, c_int, c_char_p, c_uint16, c_uint16]
+    _LIB.ui_draw_text.argtypes = [_P_UI_FB, c_int, c_int, c_char_p, c_uint16, c_uint16]
     _LIB.ui_text_width.argtypes = [c_char_p]
     _LIB.ui_text_width.restype = c_int
     _LIB.ui_grid_cell.argtypes = [
@@ -45,10 +56,10 @@ def _load():
     return _LIB
 
 
-def _fb_ptr(fb):
-    if isinstance(fb, c_void_p):
-        return fb
-    return ctypes.cast(fb.data_ptr, c_void_p)
+def _fb_struct(fb):
+    if isinstance(fb, FB):
+        return ctypes.byref(fb._struct)
+    raise TypeError("Expected FB instance")
 
 
 class FB:
@@ -58,16 +69,15 @@ class FB:
         if isinstance(buf, bytearray):
             self._buf = buf
             self._ptr = (ctypes.c_uint8 * len(buf)).from_buffer(buf)
-            self.data_ptr = ctypes.cast(self._ptr, c_void_p)
         elif isinstance(buf, bytes):
             ba = bytearray(buf)
             self._buf = ba
             self._ptr = (ctypes.c_uint8 * len(ba)).from_buffer(ba)
-            self.data_ptr = ctypes.cast(self._ptr, c_void_p)
         else:
             raise TypeError("Expected bytearray or bytes")
         self.width = width
         self.height = height
+        self._struct = ui_fb_t(self._ptr, width, height)
 
     @property
     def raw(self) -> memoryview:
@@ -77,27 +87,27 @@ class FB:
 # ---- Public functions ----
 
 def set_pixel(fb, x, y, color):
-    _load().ui_set_pixel(_fb_ptr(fb), x, y, color)
+    _load().ui_set_pixel(_fb_struct(fb), x, y, color)
 
 
 def fill_rect(fb, x, y, w, h, color):
-    _load().ui_fill_rect(_fb_ptr(fb), x, y, w, h, color)
+    _load().ui_fill_rect(_fb_struct(fb), x, y, w, h, color)
 
 
 def draw_rect(fb, x, y, w, h, color):
-    _load().ui_draw_rect(_fb_ptr(fb), x, y, w, h, color)
+    _load().ui_draw_rect(_fb_struct(fb), x, y, w, h, color)
 
 
 def fill_screen(fb, color):
-    _load().ui_fill_screen(_fb_ptr(fb), color)
+    _load().ui_fill_screen(_fb_struct(fb), color)
 
 
 def draw_char(fb, x, y, ch, fg, bg):
-    _load().ui_draw_char(_fb_ptr(fb), x, y, ch.encode("ascii"), fg, bg)
+    _load().ui_draw_char(_fb_struct(fb), x, y, ch.encode("ascii"), fg, bg)
 
 
 def draw_text(fb, x, y, text, fg, bg):
-    _load().ui_draw_text(_fb_ptr(fb), x, y, text.encode("ascii"), fg, bg)
+    _load().ui_draw_text(_fb_struct(fb), x, y, text.encode("ascii"), fg, bg)
 
 
 def text_width(text):
