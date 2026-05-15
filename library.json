@@ -1,0 +1,9 @@
+{
+  "name": "synth_ui_lib",
+  "version": "1.0.0",
+  "description": "Shared C UI library for synth_front / teensy_groovebox: drawing primitives, 5x7 font, 50-color palette",
+  "build": {
+    "srcDir": "src",
+    "includeDir": "src"
+  }
+}
