@@ -6,6 +6,7 @@
 //  Helpers
 // ---------------------------------------------------------------------------
 
+// Write a 16-bit RGB565 color into two consecutive bytes (little-endian).
 static inline void pack_rgb565(uint8_t* dst, uint16_t color) {
   dst[0] = color & 0xFF;
   dst[1] = (color >> 8) & 0xFF;
@@ -15,11 +16,13 @@ static inline void pack_rgb565(uint8_t* dst, uint16_t color) {
 //  Drawing primitives
 // ---------------------------------------------------------------------------
 
+// Set a single pixel, clamping to framebuffer bounds.
 void ui_set_pixel(ui_fb_t* fb, int x, int y, uint16_t color) {
   if (x < 0 || x >= fb->width || y < 0 || y >= fb->height) return;
   pack_rgb565(fb->data + (y * fb->width + x) * 2, color);
 }
 
+// Fill a clipped rectangular region with a solid color.
 void ui_fill_rect(ui_fb_t* fb, int x, int y, int w, int h, uint16_t color) {
   int x0 = x < 0 ? 0 : x;
   int y0 = y < 0 ? 0 : y;
@@ -39,6 +42,7 @@ void ui_fill_rect(ui_fb_t* fb, int x, int y, int w, int h, uint16_t color) {
   }
 }
 
+// Draw a 1-pixel-wide border around a rectangle (uses fill_rect for each edge).
 void ui_draw_rect(ui_fb_t* fb, int x, int y, int w, int h, uint16_t color) {
   ui_fill_rect(fb, x, y, w, 1, color);               // top
   ui_fill_rect(fb, x, y + h - 1, w, 1, color);       // bottom
@@ -46,6 +50,7 @@ void ui_draw_rect(ui_fb_t* fb, int x, int y, int w, int h, uint16_t color) {
   ui_fill_rect(fb, x + w - 1, y, 1, h, color);        // right
 }
 
+// Fill the entire framebuffer with a single color.
 void ui_fill_screen(ui_fb_t* fb, uint16_t color) {
   ui_fill_rect(fb, 0, 0, fb->width, fb->height, color);
 }
@@ -54,6 +59,7 @@ void ui_fill_screen(ui_fb_t* fb, uint16_t color) {
 //  Text
 // ---------------------------------------------------------------------------
 
+// Render a single character from the 5x7 bitmap font, with optional background.
 void ui_draw_char(ui_fb_t* fb, int x, int y, char c, uint16_t fg, uint16_t bg) {
   if (c < 32 || c > 127) c = '?';
   int glyph = c - 32;
@@ -67,6 +73,7 @@ void ui_draw_char(ui_fb_t* fb, int x, int y, char c, uint16_t fg, uint16_t bg) {
   }
 }
 
+// Render a null-terminated string left-to-right with 6px per character.
 void ui_draw_text(ui_fb_t* fb, int x, int y, const char* text,
                   uint16_t fg, uint16_t bg) {
   for (int i = 0; text[i]; i++) {
@@ -74,6 +81,7 @@ void ui_draw_text(ui_fb_t* fb, int x, int y, const char* text,
   }
 }
 
+// Return the width of a string in pixels (6px per character).
 int ui_text_width(const char* text) {
   return (int)strlen(text) * 6;
 }
@@ -82,6 +90,8 @@ int ui_text_width(const char* text) {
 //  Grid helpers
 // ---------------------------------------------------------------------------
 
+// Compute the bounding box (x,y,w,h) of a grid cell with padding.
+// Row 0 is the topmost cell; column 0 is the leftmost cell.
 void ui_grid_cell(int* ox, int* oy, int* ow, int* oh,
                   int col, int row, int cols, int rows,
                   int fb_w, int fb_h, int padding) {

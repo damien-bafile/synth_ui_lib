@@ -1,5 +1,5 @@
 /** 5x7 bitmap font — ASCII 32 (space) through 127 (DEL).
-    Each glyph is 5 bytes, one per column, 7 bits each (MSB top).
+    Each glyph is 5 bytes, one per column, 7 bits each (LSB = top row).
     Index: glyph = font_5x7[(c - 32) * 5 + col]
 */
 static const unsigned char font_5x7[96 * 5] = {

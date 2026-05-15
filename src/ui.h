@@ -7,6 +7,7 @@ extern "C" {
 #endif
 
 // --- Framebuffer descriptor ---
+// Describes a 320x240 (or similar) RGB565 framebuffer in memory.
 typedef struct {
   uint8_t* data;
   int width;
@@ -14,6 +15,7 @@ typedef struct {
 } ui_fb_t;
 
 // --- Color packing macro ---
+// Pack 8-bit RGB components into a 16-bit RGB565 value.
 #define UI_RGB565(r, g, b) \
   (((uint16_t)((r) & 0xF8) << 8) | ((uint16_t)((g) & 0xFC) << 3) | ((uint8_t)(b) >> 3))
 
@@ -78,23 +80,31 @@ typedef struct {
 //  Drawing primitives
 // ============================================================
 
+// Set a single pixel at (x,y) to the given RGB565 color.
 void ui_set_pixel(ui_fb_t* fb, int x, int y, uint16_t color);
+// Fill a rectangular area with a solid color.
 void ui_fill_rect(ui_fb_t* fb, int x, int y, int w, int h, uint16_t color);
+// Draw a 1-pixel-wide rectangular outline.
 void ui_draw_rect(ui_fb_t* fb, int x, int y, int w, int h, uint16_t color);
+// Fill the entire framebuffer with a single color.
 void ui_fill_screen(ui_fb_t* fb, uint16_t color);
 
 // ============================================================
 //  Text (5x7 bitmap font)
 // ============================================================
 
+// Draw a single 5x7 bitmap character with foreground/background colors.
 void ui_draw_char(ui_fb_t* fb, int x, int y, char c, uint16_t fg, uint16_t bg);
+// Draw a null-terminated string using the 5x7 font (6px per glyph).
 void ui_draw_text(ui_fb_t* fb, int x, int y, const char* text, uint16_t fg, uint16_t bg);
+// Return the pixel width of a string when rendered (strlen * 6).
 int ui_text_width(const char* text);
 
 // ============================================================
 //  Grid helpers
 // ============================================================
 
+// Compute pixel coordinates for a grid cell (col,row) within a cols x rows layout.
 void ui_grid_cell(int* ox, int* oy, int* ow, int* oh,
                   int col, int row, int cols, int rows,
                   int fb_w, int fb_h, int padding);
