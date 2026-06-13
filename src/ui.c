@@ -1,5 +1,6 @@
 #include "ui.h"
 #include "ui_font_5x7.h"
+#include "ui_icons.h"
 #include <string.h>
 
 // ---------------------------------------------------------------------------
@@ -103,4 +104,34 @@ void ui_grid_cell(int* ox, int* oy, int* ow, int* oh,
   *oy = row * row_h + padding;
   *ow -= padding * 2;
   *oh -= padding * 2;
+}
+
+// ---------------------------------------------------------------------------
+//  Synth / FX icons
+// ---------------------------------------------------------------------------
+
+// Draw a 5x7 synth icon glyph with foreground and background colors.
+void ui_draw_synth_icon(ui_fb_t* fb, int x, int y, SynthIcon icon,
+                        uint16_t fg, uint16_t bg) {
+  if (icon >= ICON_COUNT) return;
+  for (int col = 0; col < 5; col++) {
+    unsigned char bits = synth_glyphs[icon * 5 + col];
+    for (int row = 0; row < 7; row++) {
+      ui_set_pixel(fb, x + col, y + row,
+                   (bits >> row) & 1 ? fg : bg);
+    }
+  }
+}
+
+// Draw a 5x7 FX icon glyph with foreground and background colors.
+void ui_draw_fx_icon(ui_fb_t* fb, int x, int y, FxIcon icon,
+                     uint16_t fg, uint16_t bg) {
+  if (icon >= FX_ICON_COUNT) return;
+  for (int col = 0; col < 5; col++) {
+    unsigned char bits = fx_glyphs[icon * 5 + col];
+    for (int row = 0; row < 7; row++) {
+      ui_set_pixel(fb, x + col, y + row,
+                   (bits >> row) & 1 ? fg : bg);
+    }
+  }
 }
