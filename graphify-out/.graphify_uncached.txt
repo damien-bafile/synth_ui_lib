@@ -1,0 +1,6 @@
+/Users/daimyo/Dev/groovebox/synth_ui_lib/library.json
+/Users/daimyo/Dev/groovebox/synth_ui_lib/src/ui.c
+/Users/daimyo/Dev/groovebox/synth_ui_lib/src/ui.h
+/Users/daimyo/Dev/groovebox/synth_ui_lib/src/ui_font_5x7.h
+/Users/daimyo/Dev/groovebox/synth_ui_lib/src/ui_icons.h
+/Users/daimyo/Dev/groovebox/synth_ui_lib/CMakeLists.txt
