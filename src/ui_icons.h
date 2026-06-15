@@ -25,6 +25,10 @@ typedef enum {
     ICON_ARPEGGIO  = 12,
     ICON_GLIDE     = 13,
     ICON_NOTE      = 14,
+    ICON_PLAY      = 15,
+    ICON_PAUSE     = 16,
+    ICON_STOP      = 17,
+    ICON_RECORD    = 18,
     ICON_COUNT
 } SynthIcon;
 
@@ -44,6 +48,10 @@ static const unsigned char synth_glyphs[ICON_COUNT * 5] = {
     0x10,0x18,0x0C,0x06,0x02, /* ARPEGGIO  */
     0x10,0x08,0x04,0x02,0x01, /* GLIDE     */
     0x30,0x30,0x1F,0x01,0x02, /* NOTE      */
+    0x00,0x7F,0x3E,0x1C,0x08, /* PLAY      */
+    0x00,0x7F,0x00,0x7F,0x00, /* PAUSE     */
+    0x00,0x7F,0x7F,0x7F,0x00, /* STOP      */
+    0x3E,0x7F,0x7F,0x7F,0x3E, /* RECORD    */
 };
 
 // ---------------------------------------------------------------------------

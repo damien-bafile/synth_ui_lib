@@ -57,6 +57,48 @@ void ui_fill_screen(ui_fb_t* fb, uint16_t color) {
 }
 
 // ---------------------------------------------------------------------------
+//  Circles (midpoint algorithm)
+// ---------------------------------------------------------------------------
+
+void ui_draw_circle(ui_fb_t* fb, int xc, int yc, int r, uint16_t color) {
+  int x = 0;
+  int y = r;
+  int d = 3 - 2 * r;
+  while (y >= x) {
+    ui_set_pixel(fb, xc + x, yc + y, color);
+    ui_set_pixel(fb, xc - x, yc + y, color);
+    ui_set_pixel(fb, xc + x, yc - y, color);
+    ui_set_pixel(fb, xc - x, yc - y, color);
+    ui_set_pixel(fb, xc + y, yc + x, color);
+    ui_set_pixel(fb, xc - y, yc + x, color);
+    ui_set_pixel(fb, xc + y, yc - x, color);
+    ui_set_pixel(fb, xc - y, yc - x, color);
+    x++;
+    if (d > 0) { y--; d = d + 4 * (x - y) + 10; }
+    else        {       d = d + 4 * x + 6; }
+  }
+}
+
+void ui_fill_circle(ui_fb_t* fb, int xc, int yc, int r, uint16_t color) {
+  int x = 0;
+  int y = r;
+  int d = 3 - 2 * r;
+  while (y >= x) {
+    for (int i = xc - x; i <= xc + x; i++) {
+      ui_set_pixel(fb, i, yc + y, color);
+      ui_set_pixel(fb, i, yc - y, color);
+    }
+    for (int i = xc - y; i <= xc + y; i++) {
+      ui_set_pixel(fb, i, yc + x, color);
+      ui_set_pixel(fb, i, yc - x, color);
+    }
+    x++;
+    if (d > 0) { y--; d = d + 4 * (x - y) + 10; }
+    else        {       d = d + 4 * x + 6; }
+  }
+}
+
+// ---------------------------------------------------------------------------
 //  Text
 // ---------------------------------------------------------------------------
 

@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -88,6 +89,10 @@ void ui_fill_rect(ui_fb_t* fb, int x, int y, int w, int h, uint16_t color);
 void ui_draw_rect(ui_fb_t* fb, int x, int y, int w, int h, uint16_t color);
 // Fill the entire framebuffer with a single color.
 void ui_fill_screen(ui_fb_t* fb, uint16_t color);
+// Draw a 1-pixel-wide circle outline centered at (x,y) with radius r.
+void ui_draw_circle(ui_fb_t* fb, int x, int y, int r, uint16_t color);
+// Fill a circle centered at (x,y) with radius r.
+void ui_fill_circle(ui_fb_t* fb, int x, int y, int r, uint16_t color);
 
 // ============================================================
 //  Text (5x7 bitmap font)
