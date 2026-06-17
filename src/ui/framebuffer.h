@@ -11,6 +11,7 @@ public:
     void setPixel(int x, int y, uint16_t color);
     void fillRect(int x, int y, int w, int h, uint16_t color);
     void drawRect(int x, int y, int w, int h, uint16_t color);
+    void drawLine(int x0, int y0, int x1, int y1, uint16_t color);
     void fillScreen(uint16_t color);
     void fillCircle(int x, int y, int r, uint16_t color);
     void drawCircle(int x, int y, int r, uint16_t color);

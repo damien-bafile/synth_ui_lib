@@ -15,4 +15,5 @@
 #include "panel.h"
 #include "hbar.h"
 #include "textfield.h"
+#include "graph.h"
 #include "track_palette.h"
