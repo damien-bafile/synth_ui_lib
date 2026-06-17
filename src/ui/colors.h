@@ -46,6 +46,7 @@ constexpr uint16_t ACCENT_2    = RGB565(80,  200, 255);
 constexpr uint16_t ACCENT_3    = RGB565(180, 80,  255);
 constexpr uint16_t ACCENT_4    = RGB565(60,  255, 140);
 constexpr uint16_t HIGHLIGHT   = RGB565(255, 200, 60);
+constexpr uint16_t HEADING     = RGB565(0xf9, 0xe2, 0xaf);
 constexpr uint16_t WARN        = RGB565(255, 80,  80);
 constexpr uint16_t RECORD      = RGB565(255, 40,  40);
 constexpr uint16_t PLAY        = RGB565(60,  255, 60);
