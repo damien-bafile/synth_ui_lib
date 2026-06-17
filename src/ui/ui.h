@@ -16,4 +16,6 @@
 #include "hbar.h"
 #include "textfield.h"
 #include "graph.h"
+#include "dropdown.h"
+#include "stepgrid.h"
 #include "track_palette.h"
