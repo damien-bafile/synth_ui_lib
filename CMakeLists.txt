@@ -15,6 +15,7 @@ set(UI_SOURCES
     src/ui/panel.cpp
     src/ui/hbar.cpp
     src/ui/textfield.cpp
+    src/ui/graph.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${UI_SOURCES})
