@@ -18,4 +18,7 @@
 #include "graph.h"
 #include "dropdown.h"
 #include "stepgrid.h"
+#include "waveform.h"
+#include "meter_array.h"
+#include "xy_pad.h"
 #include "track_palette.h"
