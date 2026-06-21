@@ -122,7 +122,6 @@ void Waveform::drawSquare(Framebuffer& fb, float amplitude, int centerY) const {
 void Waveform::drawTriangle(Framebuffer& fb, float amplitude,
                             int centerY) const {
   int amplitude_px = (int)(amplitude * (height_ / 2 - 2));
-  int midX = x_ + 1 + (width_ - 2) / 2;
   int quarterX = x_ + 1 + (width_ - 2) / 4;
   int threeQuarterX = x_ + 1 + 3 * (width_ - 2) / 4;
 

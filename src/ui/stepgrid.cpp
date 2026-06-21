@@ -55,10 +55,10 @@ int StepGrid::cellY(int track) const {
 
 void StepGrid::drawSquares(Framebuffer& fb,
                            const bool pattern[MAX_TRACKS][MAX_STEPS],
-                           int playStep) {
+                         int playStep) {
     int cw = cellW();
     int ch = cellH();
-    int pad = 1;
+    int pad = 2;
 
     for (int t = 0; t < tracks_; t++) {
         for (int s = 0; s < steps_; s++) {
@@ -150,7 +150,6 @@ void StepGrid::drawStrips(Framebuffer& fb,
                           int playStep) {
     int cw = cellW();
     int stripH = h_ / tracks_;
-    int pad = 2;
 
     // Draw beat dividers
     int beats = (steps_ + 3) / 4;
@@ -194,7 +193,6 @@ void StepGrid::drawGlow(Framebuffer& fb,
                         int playStep) {
     int cw = cellW();
     int ch = cellH();
-    int pad = 1;
 
     for (int t = 0; t < tracks_; t++) {
         for (int s = 0; s < steps_; s++) {

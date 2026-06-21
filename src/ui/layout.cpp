@@ -48,7 +48,9 @@ Rect LayoutBuilder::next(int h) {
     if (availW < 0) availW = 0;
     Rect r = {cursorX_, cursorY_, availW, h};
     lineMaxH_ = std::max(lineMaxH_, h);
-    cursorX_ = cx_ + cw_;
+    cursorY_ += lineMaxH_ + vgap_;
+    cursorX_ = cx_;
+    lineMaxH_ = 0;
     return r;
 }
 
@@ -78,6 +80,7 @@ Rect LayoutBuilder::allRemaining() {
 }
 
 void LayoutBuilder::nextRow() {
+    if (cursorX_ == cx_) return;
     cursorY_ += lineMaxH_ + vgap_;
     cursorX_ = cx_;
     lineMaxH_ = 0;
