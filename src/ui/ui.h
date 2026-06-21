@@ -22,3 +22,6 @@
 #include "meter_array.h"
 #include "xy_pad.h"
 #include "track_palette.h"
+#include "rect.h"
+#include "layout.h"
+#include "page_layout.h"

@@ -77,11 +77,12 @@ void Framebuffer::closeOverlay(uint32_t tag) {
 }
 
 void Framebuffer::paintOverlays() {
+    OverlayCmd snapshot[MAX_OVERLAYS];
     int n = overlayCount_;
+    for (int i = 0; i < n; i++) snapshot[i] = overlays_[i];
     for (int i = 0; i < n; i++) {
-        if (overlays_[i].paint) {
-            overlays_[i].paint(*this, overlays_[i].user);
-        }
+        if (snapshot[i].paint)
+            snapshot[i].paint(*this, snapshot[i].user);
     }
 }
 

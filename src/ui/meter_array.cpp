@@ -1,4 +1,5 @@
 #include "meter_array.h"
+#include <algorithm>
 #include <cmath>
 
 namespace ui {
