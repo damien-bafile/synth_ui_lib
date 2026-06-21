@@ -7,11 +7,11 @@ namespace ui {
 
 class MeterArray {
 public:
-  enum MeterStyle { VERTICAL, HORIZONTAL, CIRCULAR };
+  enum class MeterStyle : uint8_t { VERTICAL, HORIZONTAL, CIRCULAR };
 
   MeterArray(int x, int y, int width, int height, int numChannels = 2,
-             MeterStyle style = VERTICAL, uint16_t fgColor = ACCENT_1,
-             uint16_t bgColor = BG_DARK);
+             MeterStyle style = MeterStyle::VERTICAL, uint16_t fgColor = ACCENT_1,
+             uint16_t bgColor = BG_DARK) noexcept;
 
   void draw(Framebuffer& fb, const float* levels, const float* peakLevels = nullptr,
             bool showLabels = false) const;

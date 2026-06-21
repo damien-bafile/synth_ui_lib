@@ -14,14 +14,14 @@ public:
 
     void draw(Framebuffer& fb);
 
-    void setTitle(const char* title) { title_ = title; }
-    void setTitleColor(uint16_t color) { titleColor_ = color; }
+    void setTitle(const char* title) noexcept { title_ = title; }
+    void setTitleColor(uint16_t color) noexcept { titleColor_ = color; }
 
-    int getX() const { return x_; }
-    int getY() const { return y_; }
-    int getWidth() const { return w_; }
-    int getHeight() const { return h_; }
-    const char* getTitle() const { return title_; }
+    int getX() const noexcept { return x_; }
+    int getY() const noexcept { return y_; }
+    int getWidth() const noexcept { return w_; }
+    int getHeight() const noexcept { return h_; }
+    const char* getTitle() const noexcept { return title_; }
 
 private:
     int x_, y_, w_, h_;

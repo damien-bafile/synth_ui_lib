@@ -14,14 +14,14 @@ public:
     void draw(Framebuffer& fb, const char* text, int cursorPos, bool focused);
     bool handleTouch(const TouchState& touch);
 
-    void setPosition(int x, int y) { x_ = x; y_ = y; }
-    void setSize(int w, int h) { w_ = w; h_ = h; }
-    void setColors(uint16_t fg, uint16_t bg) { fg_ = fg; bg_ = bg; }
+    void setPosition(int x, int y) noexcept { x_ = x; y_ = y; }
+    void setSize(int w, int h) noexcept { w_ = w; h_ = h; }
+    void setColors(uint16_t fg, uint16_t bg) noexcept { fg_ = fg; bg_ = bg; }
 
-    int getX() const { return x_; }
-    int getY() const { return y_; }
-    int getWidth() const { return w_; }
-    int getHeight() const { return h_; }
+    int getX() const noexcept { return x_; }
+    int getY() const noexcept { return y_; }
+    int getWidth() const noexcept { return w_; }
+    int getHeight() const noexcept { return h_; }
 
 private:
     int x_, y_, w_, h_;

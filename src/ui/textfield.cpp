@@ -1,4 +1,6 @@
 #include "textfield.h"
+#include "rect.h"
+#include "font.h"
 #include <cstring>
 
 namespace ui {
@@ -33,9 +35,9 @@ void TextField::draw(Framebuffer& fb, const char* text, int cursorPos, bool focu
     }
 
     int tx = x_ + pad;
-    int ty = y_ + (h_ - 7) / 2;
+    int ty = y_ + (h_ - FONT_H) / 2;
     for (int i = 0; i < drawLen && (offset + i) < textLen; i++) {
-        fb.drawChar(tx + i * 6, ty, text[offset + i], fg_, BG_SURFACE);
+        fb.drawChar(tx + i * FONT_STEP, ty, text[offset + i], fg_, BG_SURFACE);
     }
 
     if (focused && cursorPos >= offset && cursorPos <= offset + drawLen
@@ -47,8 +49,7 @@ void TextField::draw(Framebuffer& fb, const char* text, int cursorPos, bool focu
 
 bool TextField::handleTouch(const TouchState& touch) {
     return touch.pressed &&
-           touch.x >= x_ && touch.x < x_ + w_ &&
-           touch.y >= y_ && touch.y < y_ + h_;
+           Rect{x_, y_, w_, h_}.contains(touch.x, touch.y);
 }
 
 } // namespace ui

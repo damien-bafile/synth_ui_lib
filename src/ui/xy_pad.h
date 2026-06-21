@@ -8,15 +8,15 @@ namespace ui {
 
 class XYPad {
 public:
-  enum MarkerStyle { CIRCLE, CROSSHAIR, SQUARE };
+  enum class MarkerStyle : uint8_t { CIRCLE, CROSSHAIR, SQUARE };
 
   XYPad(int x, int y, int size, uint16_t fgColor = ACCENT_2,
-        uint16_t bgColor = BG_DARK, uint16_t gridColor = BG_MID);
+        uint16_t bgColor = BG_DARK, uint16_t gridColor = BG_MID) noexcept;
 
-  void draw(Framebuffer& fb, float xValue, float yValue, MarkerStyle style = CIRCLE,
+  void draw(Framebuffer& fb, float xValue, float yValue, MarkerStyle style = MarkerStyle::CIRCLE,
             bool showGrid = true, bool showLabels = false) const;
 
-  bool handleTouchInput(const TouchState& touch, float* outX, float* outY);
+  bool handleTouch(const TouchState& touch, float& outX, float& outY);
 
 private:
   int x_, y_, size_;

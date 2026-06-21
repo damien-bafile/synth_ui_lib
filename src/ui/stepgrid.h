@@ -6,12 +6,12 @@
 
 namespace ui {
 
-enum StepGridStyle {
-    STEP_GRID_SQUARES,    // Filled square on, outline off
-    STEP_GRID_BARS,       // Vertical bar, height = velocity
-    STEP_GRID_DOTS,       // Small filled circles
-    STEP_GRID_STRIPS,     // Horizontal strips per track
-    STEP_GRID_GLOW,       // Sub-step glow with playhead line
+enum class StepGridStyle : uint8_t {
+    SQUARES,    // Filled square on, outline off
+    BARS,       // Vertical bar, height = velocity
+    DOTS,       // Small filled circles
+    STRIPS,     // Horizontal strips per track
+    GLOW,       // Sub-step glow with playhead line
 };
 
 class StepGrid {
@@ -23,7 +23,7 @@ public:
     StepGrid(int x, int y, int w, int h,
              int steps = DEFAULT_STEPS,
              int tracks = 4,
-             StepGridStyle style = STEP_GRID_SQUARES);
+             StepGridStyle style = StepGridStyle::SQUARES);
 
     void draw(Framebuffer& fb,
               const bool pattern[MAX_TRACKS][MAX_STEPS],
@@ -32,20 +32,20 @@ public:
 
     bool handleTouch(const TouchState& touch, int& outTrack, int& outStep);
 
-    void setStyle(StepGridStyle style) { style_ = style; }
-    void setPosition(int x, int y) { x_ = x; y_ = y; }
+    void setStyle(StepGridStyle style) noexcept { style_ = style; }
+    void setPosition(int x, int y) noexcept { x_ = x; y_ = y; }
     void setColors(const uint16_t trackColors[MAX_TRACKS],
-                   uint16_t accent, uint16_t bg);
-    void setStepCount(int n) { steps_ = (n <= MAX_STEPS) ? n : MAX_STEPS; }
-    void setTrackCount(int n) { tracks_ = (n <= MAX_TRACKS) ? n : MAX_TRACKS; }
+                   uint16_t accent, uint16_t bg) noexcept;
+    void setStepCount(int n) noexcept { steps_ = (n <= MAX_STEPS) ? n : MAX_STEPS; }
+    void setTrackCount(int n) noexcept { tracks_ = (n <= MAX_TRACKS) ? n : MAX_TRACKS; }
 
-    int getX() const { return x_; }
-    int getY() const { return y_; }
-    int getWidth() const { return w_; }
-    int getHeight() const { return h_; }
-    int getStepCount() const { return steps_; }
-    int getTrackCount() const { return tracks_; }
-    StepGridStyle getStyle() const { return style_; }
+    int getX() const noexcept { return x_; }
+    int getY() const noexcept { return y_; }
+    int getWidth() const noexcept { return w_; }
+    int getHeight() const noexcept { return h_; }
+    int getStepCount() const noexcept { return steps_; }
+    int getTrackCount() const noexcept { return tracks_; }
+    StepGridStyle getStyle() const noexcept { return style_; }
 
 private:
     void drawSquares(Framebuffer& fb,
@@ -60,10 +60,10 @@ private:
     void drawGlow(Framebuffer& fb,
                   const bool pattern[MAX_TRACKS][MAX_STEPS], int playStep);
 
-    int cellX(int step) const;
-    int cellY(int track) const;
-    int cellW() const;
-    int cellH() const;
+    int cellX(int step) const noexcept;
+    int cellY(int track) const noexcept;
+    int cellW() const noexcept;
+    int cellH() const noexcept;
 
     int x_, y_, w_, h_;
     int steps_, tracks_;

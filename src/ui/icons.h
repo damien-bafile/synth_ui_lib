@@ -1,6 +1,5 @@
 #pragma once
 #include <cstdint>
-#include "font.h"
 
 namespace ui {
 
@@ -25,7 +24,7 @@ enum class SynthIcon : uint8_t {
     STOP      = 17,
     SAMPLE_HOLD = 18,
     RECORD    = 19,
-    COUNT
+    NONE      = 0xFF,
 };
 
 static const unsigned char synth_glyphs[20 * 5] = {

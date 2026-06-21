@@ -1,4 +1,5 @@
 #include "slider.h"
+#include "rect.h"
 
 namespace ui {
 
@@ -69,13 +70,7 @@ void Slider::draw(Framebuffer& fb, float value) {
 bool Slider::handleTouch(const TouchState& touch) {
     if (!touch.pressed) return false;
 
-    if (vertical_) {
-        return touch.x >= x_ && touch.x < x_ + w_ &&
-               touch.y >= y_ && touch.y < y_ + h_;
-    } else {
-        return touch.x >= x_ && touch.x < x_ + w_ &&
-               touch.y >= y_ && touch.y < y_ + h_;
-    }
+    return Rect{x_, y_, w_, h_}.contains(touch.x, touch.y);
 }
 
 } // namespace ui

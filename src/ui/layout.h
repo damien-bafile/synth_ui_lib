@@ -5,15 +5,15 @@ namespace ui {
 
 class LayoutBuilder {
 public:
-    LayoutBuilder(int x, int y, int w, int h);
-    explicit LayoutBuilder(Rect rect);
+    LayoutBuilder(int x, int y, int w, int h) noexcept;
+    explicit LayoutBuilder(Rect rect) noexcept;
 
-    LayoutBuilder& setPadding(int p);
-    LayoutBuilder& setPadding(int h, int v);
-    LayoutBuilder& setPadding(int t, int r, int b, int l);
+    LayoutBuilder& setPadding(int p) noexcept;
+    LayoutBuilder& setPadding(int h, int v) noexcept;
+    LayoutBuilder& setPadding(int t, int r, int b, int l) noexcept;
 
-    LayoutBuilder& setSpacing(int gap);
-    LayoutBuilder& setSpacing(int hgap, int vgap);
+    LayoutBuilder& setSpacing(int gap) noexcept;
+    LayoutBuilder& setSpacing(int hgap, int vgap) noexcept;
 
     Rect next(int h);
     Rect next(int w, int h);
@@ -24,17 +24,17 @@ public:
     void reset();
 
     Rect cell(int col, int row, int cols, int rows,
-              int colspan = 1, int rowspan = 1) const;
+              int colspan = 1, int rowspan = 1) const noexcept;
 
-    LayoutBuilder sub(Rect rect) const;
+    LayoutBuilder sub(Rect rect) const noexcept;
 
-    Rect contentArea() const;
-    int contentX() const;
-    int contentY() const;
-    int contentW() const;
-    int contentH() const;
-    int cursorX() const;
-    int cursorY() const;
+    Rect contentArea() const noexcept;
+    int contentX() const noexcept;
+    int contentY() const noexcept;
+    int contentW() const noexcept;
+    int contentH() const noexcept;
+    int cursorX() const noexcept;
+    int cursorY() const noexcept;
 
 private:
     int x_, y_, w_, h_;

@@ -3,15 +3,15 @@
 
 namespace ui {
 
-LayoutBuilder::LayoutBuilder(int x, int y, int w, int h)
+LayoutBuilder::LayoutBuilder(int x, int y, int w, int h) noexcept
     : x_(x), y_(y), w_(w), h_(h),
       cx_(x), cy_(y), cw_(w), ch_(h),
       cursorX_(x), cursorY_(y) {}
 
-LayoutBuilder::LayoutBuilder(Rect rect)
+LayoutBuilder::LayoutBuilder(Rect rect) noexcept
     : LayoutBuilder(rect.x, rect.y, rect.w, rect.h) {}
 
-LayoutBuilder& LayoutBuilder::setPadding(int p) {
+LayoutBuilder& LayoutBuilder::setPadding(int p) noexcept {
     padT_ = padR_ = padB_ = padL_ = p;
     cx_ = x_ + padL_; cy_ = y_ + padT_;
     cw_ = w_ - padL_ - padR_;
@@ -20,11 +20,11 @@ LayoutBuilder& LayoutBuilder::setPadding(int p) {
     return *this;
 }
 
-LayoutBuilder& LayoutBuilder::setPadding(int h, int v) {
+LayoutBuilder& LayoutBuilder::setPadding(int h, int v) noexcept {
     return setPadding(v, h, v, h);
 }
 
-LayoutBuilder& LayoutBuilder::setPadding(int t, int r, int b, int l) {
+LayoutBuilder& LayoutBuilder::setPadding(int t, int r, int b, int l) noexcept {
     padT_ = t; padR_ = r; padB_ = b; padL_ = l;
     cx_ = x_ + padL_; cy_ = y_ + padT_;
     cw_ = w_ - padL_ - padR_;
@@ -33,12 +33,12 @@ LayoutBuilder& LayoutBuilder::setPadding(int t, int r, int b, int l) {
     return *this;
 }
 
-LayoutBuilder& LayoutBuilder::setSpacing(int gap) {
+LayoutBuilder& LayoutBuilder::setSpacing(int gap) noexcept {
     hgap_ = vgap_ = gap;
     return *this;
 }
 
-LayoutBuilder& LayoutBuilder::setSpacing(int hgap, int vgap) {
+LayoutBuilder& LayoutBuilder::setSpacing(int hgap, int vgap) noexcept {
     hgap_ = hgap; vgap_ = vgap;
     return *this;
 }
@@ -93,7 +93,7 @@ void LayoutBuilder::reset() {
 }
 
 Rect LayoutBuilder::cell(int col, int row, int cols, int rows,
-                          int colspan, int rowspan) const {
+                          int colspan, int rowspan) const noexcept {
     if (cols < 1) cols = 1;
     if (rows < 1) rows = 1;
     int cellW = cw_ / cols;
@@ -106,16 +106,16 @@ Rect LayoutBuilder::cell(int col, int row, int cols, int rows,
     };
 }
 
-LayoutBuilder LayoutBuilder::sub(Rect rect) const {
+LayoutBuilder LayoutBuilder::sub(Rect rect) const noexcept {
     return LayoutBuilder(rect);
 }
 
-Rect LayoutBuilder::contentArea() const { return {cx_, cy_, cw_, ch_}; }
-int LayoutBuilder::contentX() const { return cx_; }
-int LayoutBuilder::contentY() const { return cy_; }
-int LayoutBuilder::contentW() const { return cw_; }
-int LayoutBuilder::contentH() const { return ch_; }
-int LayoutBuilder::cursorX() const { return cursorX_; }
-int LayoutBuilder::cursorY() const { return cursorY_; }
+Rect LayoutBuilder::contentArea() const noexcept { return {cx_, cy_, cw_, ch_}; }
+int LayoutBuilder::contentX() const noexcept { return cx_; }
+int LayoutBuilder::contentY() const noexcept { return cy_; }
+int LayoutBuilder::contentW() const noexcept { return cw_; }
+int LayoutBuilder::contentH() const noexcept { return ch_; }
+int LayoutBuilder::cursorX() const noexcept { return cursorX_; }
+int LayoutBuilder::cursorY() const noexcept { return cursorY_; }
 
 } // namespace ui

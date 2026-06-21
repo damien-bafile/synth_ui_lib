@@ -25,15 +25,15 @@ public:
     void draw(Framebuffer& fb, const AdsrEnvelope& env);
     bool handleTouch(const TouchState& touch, AdsrEnvelope& env);
 
-    void setLineColors(uint16_t color) { lineColor_ = color; }
-    void setFillColors(uint16_t c1, uint16_t c2) { fillColor1_ = c1; fillColor2_ = c2; }
-    void setPosition(int x, int y) { x_ = x; y_ = y; }
-    void setSize(int w, int h) { w_ = w; h_ = h; }
+    void setLineColors(uint16_t color) noexcept { lineColor_ = color; }
+    void setFillColors(uint16_t c1, uint16_t c2) noexcept { fillColor1_ = c1; fillColor2_ = c2; }
+    void setPosition(int x, int y) noexcept { x_ = x; y_ = y; }
+    void setSize(int w, int h) noexcept { w_ = w; h_ = h; }
 
-    int getX() const { return x_; }
-    int getY() const { return y_; }
-    int getWidth() const { return w_; }
-    int getHeight() const { return h_; }
+    int getX() const noexcept { return x_; }
+    int getY() const noexcept { return y_; }
+    int getWidth() const noexcept { return w_; }
+    int getHeight() const noexcept { return h_; }
 
 private:
     int x_, y_, w_, h_;

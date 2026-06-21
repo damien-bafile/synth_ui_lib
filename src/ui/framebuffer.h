@@ -33,6 +33,10 @@ public:
     void drawSynthIcon(int x, int y, SynthIcon icon, uint16_t fg, uint16_t bg);
     void drawFxIcon(int x, int y, FxIcon icon, uint16_t fg, uint16_t bg);
 
+    int getWidth() const noexcept { return width_; }
+    int getHeight() const noexcept { return height_; }
+    int getOverlayCount() const noexcept { return overlayCount_; }
+
     // Deferred-overlay API. Screens should call clearOverlays() at the start
     // of their render pass and paintOverlays() at the end so widgets that
     // need to sit on top of panels (dropdown lists, popups) are not clipped
@@ -51,11 +55,6 @@ public:
     void closeOverlay(uint32_t tag);
     void clearOverlays();
     void paintOverlays();
-
-    int getOverlayCount() const { return overlayCount_; }
-
-    int getWidth() const { return width_; }
-    int getHeight() const { return height_; }
 
 private:
     static inline void packRgb565(uint8_t* dst, uint16_t color);

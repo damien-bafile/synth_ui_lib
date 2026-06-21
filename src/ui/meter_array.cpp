@@ -5,7 +5,7 @@
 namespace ui {
 
 MeterArray::MeterArray(int x, int y, int width, int height, int numChannels,
-                       MeterStyle style, uint16_t fgColor, uint16_t bgColor)
+                       MeterStyle style, uint16_t fgColor, uint16_t bgColor) noexcept
     : x_(x), y_(y), width_(width), height_(height), numChannels_(numChannels),
       style_(style), fgColor_(fgColor), bgColor_(bgColor) {}
 
@@ -16,13 +16,13 @@ void MeterArray::draw(Framebuffer& fb, const float* levels,
   fb.drawRect(x_, y_, width_, height_, fgColor_);
 
   switch (style_) {
-  case VERTICAL:
+  case MeterStyle::VERTICAL:
     drawVerticalMeters(fb, levels, peakLevels, showLabels);
     break;
-  case HORIZONTAL:
+  case MeterStyle::HORIZONTAL:
     drawHorizontalMeters(fb, levels, peakLevels, showLabels);
     break;
-  case CIRCULAR:
+  case MeterStyle::CIRCULAR:
     drawCircularMeters(fb, levels, peakLevels, showLabels);
     break;
   }
@@ -56,8 +56,7 @@ void MeterArray::drawVerticalMeters(Framebuffer& fb, const float* levels,
     int meterX = x_ + 1 + ch * (meterWidth + 1);
     int meterY = y_ + 1;
 
-    float level = levels[ch];
-    level = level < 0.0f ? 0.0f : (level > 1.0f ? 1.0f : level);
+    float level = clamp(levels[ch], 0.0f, 1.0f);
 
     // Draw meter background
     fb.fillRect(meterX, meterY, meterWidth, meterHeight, BG_DARK);
@@ -70,8 +69,7 @@ void MeterArray::drawVerticalMeters(Framebuffer& fb, const float* levels,
 
     // Draw peak indicator if provided
     if (peakLevels) {
-      float peakLevel = peakLevels[ch];
-      peakLevel = peakLevel < 0.0f ? 0.0f : (peakLevel > 1.0f ? 1.0f : peakLevel);
+      float peakLevel = clamp(peakLevels[ch], 0.0f, 1.0f);
       int peakY = meterY + meterHeight - (int)(peakLevel * meterHeight);
       fb.drawLine(meterX, peakY, meterX + meterWidth - 1, peakY, ACCENT_1);
     }
@@ -95,8 +93,7 @@ void MeterArray::drawHorizontalMeters(Framebuffer& fb, const float* levels,
     int meterX = x_ + 1 + labelWidth;
     int meterY = y_ + 1 + ch * (meterHeight + 1);
 
-    float level = levels[ch];
-    level = level < 0.0f ? 0.0f : (level > 1.0f ? 1.0f : level);
+    float level = clamp(levels[ch], 0.0f, 1.0f);
 
     // Draw meter background
     fb.fillRect(meterX, meterY, meterWidth, meterHeight, BG_DARK);
@@ -108,16 +105,15 @@ void MeterArray::drawHorizontalMeters(Framebuffer& fb, const float* levels,
 
     // Draw peak indicator if provided
     if (peakLevels) {
-      float peakLevel = peakLevels[ch];
-      peakLevel = peakLevel < 0.0f ? 0.0f : (peakLevel > 1.0f ? 1.0f : peakLevel);
+      float peakLevel = clamp(peakLevels[ch], 0.0f, 1.0f);
       int peakX = meterX + (int)(peakLevel * meterWidth);
       fb.drawLine(peakX, meterY, peakX, meterY + meterHeight - 1, ACCENT_1);
     }
   }
 }
 void MeterArray::drawCircularMeters(Framebuffer& fb, const float* levels,
-                                    const float* peakLevels,
-                                    bool showLabels) const {
+                                    const float* /*peakLevels*/,
+                                    bool /*showLabels*/) const {
   if (numChannels_ < 1)
     return;
 
@@ -130,8 +126,7 @@ void MeterArray::drawCircularMeters(Framebuffer& fb, const float* levels,
     int centerX = x_ + 2 + gaugeRadius + ch * (gaugeRadius * 2 + 2);
     int centerY = y_ + height_ / 2;
 
-    float level = levels[ch];
-    level = level < 0.0f ? 0.0f : (level > 1.0f ? 1.0f : level);
+    float level = clamp(levels[ch], 0.0f, 1.0f);
 
     // Draw gauge background circle
     fb.drawCircle(centerX, centerY, gaugeRadius, BG_MID);

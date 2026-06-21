@@ -1,4 +1,6 @@
 #include "checkbox.h"
+#include "rect.h"
+#include "font.h"
 
 namespace ui {
 
@@ -20,14 +22,13 @@ void Checkbox::draw(Framebuffer& fb, bool checked, const char* label) {
     }
 
     if (label) {
-        fb.drawText(x_ + size_ + 4, y_ + (size_ - 7) / 2, label, fg_, bg_);
+        fb.drawText(x_ + size_ + 4, y_ + (size_ - FONT_H) / 2, label, fg_, bg_);
     }
 }
 
 bool Checkbox::handleTouch(const TouchState& touch) {
     return touch.pressed &&
-           touch.x >= x_ && touch.x < x_ + size_ &&
-           touch.y >= y_ && touch.y < y_ + size_;
+           Rect{x_, y_, size_, size_}.contains(touch.x, touch.y);
 }
 
 } // namespace ui

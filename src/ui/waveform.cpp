@@ -5,12 +5,12 @@
 namespace ui {
 
 Waveform::Waveform(int x, int y, int width, int height, uint16_t fgColor,
-                   uint16_t bgColor)
+                   uint16_t bgColor) noexcept
     : x_(x), y_(y), width_(width), height_(height), fgColor_(fgColor),
       bgColor_(bgColor) {}
 
 void Waveform::draw(Framebuffer& fb, WaveformType waveType, float amplitude,
-                    float frequency, bool showGrid) const {
+                    float /*frequency*/, bool showGrid) const {
   // Draw background
   fb.fillRect(x_, y_, width_, height_, bgColor_);
   fb.drawRect(x_, y_, width_, height_, fgColor_);
@@ -24,23 +24,22 @@ void Waveform::draw(Framebuffer& fb, WaveformType waveType, float amplitude,
   }
 
   // Clamp amplitude
-  amplitude = amplitude < 0.0f ? 0.0f : (amplitude > 1.0f ? 1.0f : amplitude);
+  amplitude = clamp(amplitude, 0.0f, 1.0f);
 
   switch (waveType) {
-  case SINE:
+  case WaveformType::SINE:
     drawSine(fb, amplitude, centerY);
     break;
-  case SQUARE:
+  case WaveformType::SQUARE:
     drawSquare(fb, amplitude, centerY);
     break;
-  case TRIANGLE:
+  case WaveformType::TRIANGLE:
     drawTriangle(fb, amplitude, centerY);
     break;
-  case SAWTOOTH:
+  case WaveformType::SAWTOOTH:
     drawSawtooth(fb, amplitude, centerY);
     break;
-  case CUSTOM:
-    // Custom waveform handled by drawCustom()
+  case WaveformType::CUSTOM:
     break;
   }
 }
@@ -69,8 +68,7 @@ void Waveform::drawCustom(Framebuffer& fb, const float* samples,
     int pixelX = x_ + 1 + (i * (width_ - 2)) / (numSamples - 1);
     float sampleValue = samples[i];
     // Clamp sample value
-    sampleValue = sampleValue < -1.0f ? -1.0f
-                  : (sampleValue > 1.0f ? 1.0f : sampleValue);
+    sampleValue = clamp(sampleValue, -1.0f, 1.0f);
     int pixelY = centerY - (int)(sampleValue * (height_ / 2 - 2));
 
     fb.drawLine(lastPixelX, lastPixelY, pixelX, pixelY, fgColor_);
@@ -148,7 +146,7 @@ void Waveform::drawSawtooth(Framebuffer& fb, float amplitude,
               fgColor_);
 }
 
-void Waveform::drawGrid(Framebuffer& fb, int centerY) const {
+void Waveform::drawGrid(Framebuffer& fb, int /*centerY*/) const {
   // Horizontal grid lines (quartiles)
   int quarterHeight = height_ / 4;
   for (int i = 1; i < 4; i++) {

@@ -4,6 +4,8 @@ project(synth_ui_lib LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+add_compile_options(-Wall -Wextra -Wpedantic)
+
 # Export compile commands for IDE support and tooling
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 

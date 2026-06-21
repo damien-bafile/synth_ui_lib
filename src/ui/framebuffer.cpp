@@ -115,6 +115,7 @@ void Framebuffer::fillRect(int x, int y, int w, int h, uint16_t color) {
 }
 
 void Framebuffer::drawRect(int x, int y, int w, int h, uint16_t color) {
+    if (w < 1 || h < 1) return;
     fillRect(x, y, w, 1, color);
     fillRect(x, y + h - 1, w, 1, color);
     fillRect(x, y, 1, h, color);
@@ -196,14 +197,12 @@ void Framebuffer::drawChar(int x, int y, char c, uint16_t fg, uint16_t bg) {
 
 void Framebuffer::drawText(int x, int y, const char* text, uint16_t fg, uint16_t bg) {
     for (int i = 0; text[i]; i++) {
-        drawChar(x + i * 6, y, text[i], fg, bg);
+        drawChar(x + i * FONT_STEP, y, text[i], fg, bg);
     }
 }
 
 int Framebuffer::textWidth(const char* text) {
-    int len = 0;
-    while (text[len]) len++;
-    return len * 6;
+    return std::strlen(text) * FONT_STEP;
 }
 
 void Framebuffer::drawSynthIcon(int x, int y, SynthIcon icon, uint16_t fg, uint16_t bg) {

@@ -9,6 +9,10 @@ constexpr uint16_t RGB565(uint8_t r, uint8_t g, uint8_t b) {
            (static_cast<uint8_t>(b) >> 3);
 }
 
+constexpr float clamp(float v, float lo, float hi) {
+    return v < lo ? lo : (v > hi ? hi : v);
+}
+
 // Base
 constexpr uint16_t BLACK      = RGB565(0,   0,   0);
 constexpr uint16_t WHITE      = RGB565(255, 255, 255);

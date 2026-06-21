@@ -105,4 +105,8 @@ static const unsigned char font_5x7[96 * 5] = {
     0x08,0x1c,0x2a,0x08,0x08, /* DEL */
 };
 
+constexpr int FONT_W = 5;
+constexpr int FONT_H = 7;
+constexpr int FONT_STEP = 6;
+
 } // namespace ui

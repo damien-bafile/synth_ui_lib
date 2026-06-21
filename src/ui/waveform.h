@@ -7,7 +7,7 @@ namespace ui {
 
 class Waveform {
 public:
-  enum WaveformType {
+  enum class WaveformType : uint8_t {
     SINE,
     SQUARE,
     TRIANGLE,
@@ -17,7 +17,7 @@ public:
 
   Waveform(int x, int y, int width, int height,
            uint16_t fgColor = ACCENT_1,
-           uint16_t bgColor = BG_DARK);
+           uint16_t bgColor = BG_DARK) noexcept;
 
   void draw(Framebuffer& fb, WaveformType waveType, float amplitude,
             float frequency = 1.0f, bool showGrid = true) const;

@@ -1,4 +1,6 @@
 #include "toggle.h"
+#include "rect.h"
+#include "font.h"
 
 namespace ui {
 
@@ -29,15 +31,14 @@ void Toggle::drawWithLabel(Framebuffer& fb, bool on, const char* label,
                            uint16_t fg, uint16_t bg) {
     draw(fb, on);
     if (label) {
-        int ly = y_ + (h_ - 7) / 2;
+        int ly = y_ + (h_ - FONT_H) / 2;
         fb.drawText(x_ + w_ + 4, ly, label, fg, bg);
     }
 }
 
 bool Toggle::handleTouch(const TouchState& touch) {
     return touch.pressed &&
-           touch.x >= x_ && touch.x < x_ + w_ &&
-           touch.y >= y_ && touch.y < y_ + h_;
+           Rect{x_, y_, w_, h_}.contains(touch.x, touch.y);
 }
 
 } // namespace ui

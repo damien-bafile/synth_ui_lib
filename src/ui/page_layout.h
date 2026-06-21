@@ -19,14 +19,14 @@ class PageLayout {
 public:
     static constexpr int MAX_PAGES = 8;
 
-    PageLayout();
+    PageLayout() noexcept;
 
     void addPage(const char* name, PageDrawFn draw,
-                 PageTouchFn handleTouch = nullptr);
+                 PageTouchFn handleTouch = nullptr) noexcept;
 
-    void setPage(int index);
-    int  currentPage() const;
-    int  pageCount() const;
+    void setPage(int index) noexcept;
+    int  currentPage() const noexcept;
+    int  pageCount() const noexcept;
 
     void draw(Framebuffer& fb) const;
     bool handleTouch(const TouchState& touch) const;

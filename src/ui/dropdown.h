@@ -7,11 +7,11 @@
 
 namespace ui {
 
-enum DropdownStyle {
-    DROPDOWN_CLASSIC,    // Filled bg, border, chevron
-    DROPDOWN_OUTLINED,   // Border only, dark bg
-    DROPDOWN_UNDERLINED, // Text + underline + chevron, no box
-    DROPDOWN_COMPACT,    // Smaller height, tight padding
+enum class DropdownStyle : uint8_t {
+    CLASSIC,    // Filled bg, border, chevron
+    OUTLINED,   // Border only, dark bg
+    UNDERLINED, // Text + underline + chevron, no box
+    COMPACT,    // Smaller height, tight padding
 };
 
 class Dropdown {
@@ -21,7 +21,7 @@ public:
     static constexpr int MAX_ITEMS = 16;
 
     Dropdown(int x, int y, int w = DEFAULT_W, int h = DEFAULT_H,
-             DropdownStyle style = DROPDOWN_CLASSIC,
+             DropdownStyle style = DropdownStyle::CLASSIC,
              uint16_t fg = TEXT, uint16_t bg = BG_SURFACE,
              uint16_t accent = ACCENT_2);
 
@@ -31,18 +31,18 @@ public:
     void addItem(const char* item);
     void addItem(const char* item, SynthIcon icon);
     void clearItems();
-    int getItemCount() const { return itemCount_; }
+    int getItemCount() const noexcept { return itemCount_; }
 
-    void setPosition(int x, int y) { x_ = x; y_ = y; }
-    void setColors(uint16_t fg, uint16_t bg, uint16_t accent) {
+    void setPosition(int x, int y) noexcept { x_ = x; y_ = y; }
+    void setColors(uint16_t fg, uint16_t bg, uint16_t accent) noexcept {
         fg_ = fg; bg_ = bg; accent_ = accent;
     }
-    void setStyle(DropdownStyle style) { style_ = style; }
+    void setStyle(DropdownStyle style) noexcept { style_ = style; }
 
-    int getX() const { return x_; }
-    int getY() const { return y_; }
-    int getWidth() const { return w_; }
-    int getHeight() const { return h_; }
+    int getX() const noexcept { return x_; }
+    int getY() const noexcept { return y_; }
+    int getWidth() const noexcept { return w_; }
+    int getHeight() const noexcept { return h_; }
 
 private:
     void drawClassic(Framebuffer& fb, int selectedIndex, bool expanded);
@@ -50,7 +50,7 @@ private:
     void drawUnderlined(Framebuffer& fb, int selectedIndex, bool expanded);
     void drawCompact(Framebuffer& fb, int selectedIndex, bool expanded);
     void drawChevron(Framebuffer& fb, int cx, int cy, bool down, uint16_t color);
-    int getItemHeight() const;
+    int getItemHeight() const noexcept;
 
     // Paints the expanded item list only (no closed-box header). Used by
     // draw() when expanded=true so the list is deferred to the overlay

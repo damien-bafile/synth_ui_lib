@@ -1,4 +1,6 @@
 #include "button.h"
+#include "rect.h"
+#include "font.h"
 
 namespace ui {
 
@@ -13,7 +15,7 @@ void Button::draw(Framebuffer& fb, bool pressed) {
         if (label_) {
             int tw = Framebuffer::textWidth(label_);
             int tx = x_ + (w_ - tw) / 2;
-            int ty = y_ + (h_ - 7) / 2;
+            int ty = y_ + (h_ - FONT_H) / 2;
             fb.drawText(tx, ty, label_, bg_, fg_);
         }
     } else {
@@ -22,16 +24,14 @@ void Button::draw(Framebuffer& fb, bool pressed) {
         if (label_) {
             int tw = Framebuffer::textWidth(label_);
             int tx = x_ + (w_ - tw) / 2;
-            int ty = y_ + (h_ - 7) / 2;
+            int ty = y_ + (h_ - FONT_H) / 2;
             fb.drawText(tx, ty, label_, fg_, bg_);
         }
     }
 }
 
 bool Button::handleTouch(const TouchState& touch) {
-    return touch.pressed &&
-           touch.x >= x_ && touch.x < x_ + w_ &&
-           touch.y >= y_ && touch.y < y_ + h_;
+    return touch.pressed && Rect{x_, y_, w_, h_}.contains(touch.x, touch.y);
 }
 
 } // namespace ui

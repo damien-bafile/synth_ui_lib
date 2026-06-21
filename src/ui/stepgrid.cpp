@@ -21,7 +21,7 @@ StepGrid::StepGrid(int x, int y, int w, int h,
 }
 
 void StepGrid::setColors(const uint16_t trackColors[MAX_TRACKS],
-                         uint16_t accent, uint16_t bg) {
+                         uint16_t accent, uint16_t bg) noexcept {
     for (int i = 0; i < MAX_TRACKS; i++) {
         trackColors_[i] = trackColors[i];
     }
@@ -29,7 +29,7 @@ void StepGrid::setColors(const uint16_t trackColors[MAX_TRACKS],
     bg_ = bg;
 }
 
-int StepGrid::cellW() const {
+int StepGrid::cellW() const noexcept {
     int beats = (steps_ + 3) / 4;
     if (beats < 1) beats = 1;
     int beatGap = 2;
@@ -37,11 +37,11 @@ int StepGrid::cellW() const {
     return beatW / 4;
 }
 
-int StepGrid::cellH() const {
+int StepGrid::cellH() const noexcept {
     return h_ / tracks_;
 }
 
-int StepGrid::cellX(int step) const {
+int StepGrid::cellX(int step) const noexcept {
     int beat = step / 4;
     int inBeat = step % 4;
     int beatGap = 2;
@@ -49,7 +49,7 @@ int StepGrid::cellX(int step) const {
     return x_ + beat * (beatW + beatGap) + inBeat * cellW();
 }
 
-int StepGrid::cellY(int track) const {
+int StepGrid::cellY(int track) const noexcept {
     return y_ + track * cellH();
 }
 
@@ -235,19 +235,19 @@ void StepGrid::draw(Framebuffer& fb,
     fb.fillRect(x_, y_, w_, h_, bg_);
 
     switch (style_) {
-        case STEP_GRID_SQUARES:
+        case StepGridStyle::SQUARES:
             drawSquares(fb, pattern, playStep);
             break;
-        case STEP_GRID_BARS:
+        case StepGridStyle::BARS:
             drawBars(fb, pattern, playStep, velocities);
             break;
-        case STEP_GRID_DOTS:
+        case StepGridStyle::DOTS:
             drawDots(fb, pattern, playStep);
             break;
-        case STEP_GRID_STRIPS:
+        case StepGridStyle::STRIPS:
             drawStrips(fb, pattern, playStep);
             break;
-        case STEP_GRID_GLOW:
+        case StepGridStyle::GLOW:
             drawGlow(fb, pattern, playStep);
             break;
     }
