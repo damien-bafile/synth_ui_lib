@@ -1,11 +1,12 @@
 #include "stepgrid.h"
+#include "font.h"
 
 namespace ui {
 
 StepGrid::StepGrid(int x, int y, int w, int h,
                    int steps, int tracks, StepGridStyle style)
     : x_(x), y_(y), w_(w), h_(h),
-      steps_(steps), tracks_(tracks), style_(style),
+      steps_(steps), tracks_(tracks), activeTrack_(-1), style_(style),
       accent_(ACCENT_2), bg_(BG_DARK) {
     uint16_t defaults[MAX_TRACKS] = {
         TRACK_0, TRACK_1, TRACK_2, TRACK_3,
@@ -27,6 +28,10 @@ void StepGrid::setColors(const uint16_t trackColors[MAX_TRACKS],
     }
     accent_ = accent;
     bg_ = bg;
+}
+
+void StepGrid::setActiveTrack(int track) noexcept {
+    activeTrack_ = (track >= 0 && track < tracks_) ? track : -1;
 }
 
 int StepGrid::cellW() const noexcept {
@@ -55,7 +60,8 @@ int StepGrid::cellY(int track) const noexcept {
 
 void StepGrid::drawSquares(Framebuffer& fb,
                            const bool pattern[MAX_TRACKS][MAX_STEPS],
-                         int playStep) {
+                         int playStep,
+                         const char* const notes[MAX_TRACKS][MAX_STEPS]) {
     int cw = cellW();
     int ch = cellH();
     int pad = 2;
@@ -70,8 +76,11 @@ void StepGrid::drawSquares(Framebuffer& fb,
                             trackColor);
             } else {
                 fb.drawRect(cx + pad, cy + pad, cw - pad * 2, ch - pad * 2,
-                            GRAY_MID);
+                            trackColor);
             }
+            drawCellNote(fb, cx, cy, cw, ch, notes ? notes[t][s] : nullptr,
+                         pattern[t][s] ? TEXT : TEXT_DIM,
+                         pattern[t][s] ? trackColor : bg_);
         }
     }
 
@@ -86,7 +95,8 @@ void StepGrid::drawSquares(Framebuffer& fb,
 
 void StepGrid::drawBars(Framebuffer& fb,
                         const bool pattern[MAX_TRACKS][MAX_STEPS], int playStep,
-                        const uint8_t velocities[MAX_TRACKS][MAX_STEPS]) {
+                        const uint8_t velocities[MAX_TRACKS][MAX_STEPS],
+                        const char* const notes[MAX_TRACKS][MAX_STEPS]) {
     int cw = cellW();
     int ch = cellH();
     int pad = 1;
@@ -107,8 +117,11 @@ void StepGrid::drawBars(Framebuffer& fb,
             } else {
                 int dotY = cy + ch - pad - 2;
                 int dotX = cx + cw / 2;
-                fb.fillRect(dotX - 1, dotY, 2, 2, GRAY_MID);
+                fb.fillRect(dotX - 1, dotY, 2, 2, trackColor);
             }
+            drawCellNote(fb, cx, cy, cw, ch, notes ? notes[t][s] : nullptr,
+                         pattern[t][s] ? TEXT : TEXT_DIM,
+                         pattern[t][s] ? trackColor : bg_);
         }
     }
 
@@ -122,7 +135,8 @@ void StepGrid::drawBars(Framebuffer& fb,
 
 void StepGrid::drawDots(Framebuffer& fb,
                         const bool pattern[MAX_TRACKS][MAX_STEPS],
-                        int playStep) {
+                        int playStep,
+                        const char* const notes[MAX_TRACKS][MAX_STEPS]) {
     int cw = cellW();
     int ch = cellH();
     int r = (cw < ch ? cw : ch) / 3;
@@ -139,15 +153,20 @@ void StepGrid::drawDots(Framebuffer& fb,
                 int thisR = (s == playStep) ? r + 1 : r;
                 fb.fillCircle(cx, cy, thisR, trackColor);
             } else {
-                fb.fillCircle(cx, cy, dotR, GRAY_MID);
+                fb.fillCircle(cx, cy, dotR, trackColor);
             }
+            drawCellNote(fb, cellX(s), cellY(t), cw, ch,
+                         notes ? notes[t][s] : nullptr,
+                         pattern[t][s] ? TEXT : TEXT_DIM,
+                         pattern[t][s] ? trackColor : bg_);
         }
     }
 }
 
 void StepGrid::drawStrips(Framebuffer& fb,
                           const bool pattern[MAX_TRACKS][MAX_STEPS],
-                          int playStep) {
+                          int playStep,
+                          const char* const notes[MAX_TRACKS][MAX_STEPS]) {
     int cw = cellW();
     int stripH = h_ / tracks_;
 
@@ -176,8 +195,12 @@ void StepGrid::drawStrips(Framebuffer& fb,
                 int dashH = 2;
                 int dashX = cx + (cw - dashW) / 2;
                 int dashY = trackY + (stripH - dashH) / 2;
-                fb.fillRect(dashX, dashY, dashW, dashH, GRAY_MID);
+                fb.fillRect(dashX, dashY, dashW, dashH, trackColor);
             }
+            drawCellNote(fb, cx, trackY, cw, stripH,
+                         notes ? notes[t][s] : nullptr,
+                         pattern[t][s] ? TEXT : TEXT_DIM,
+                         pattern[t][s] ? trackColor : bg_);
         }
     }
 
@@ -190,7 +213,8 @@ void StepGrid::drawStrips(Framebuffer& fb,
 
 void StepGrid::drawGlow(Framebuffer& fb,
                         const bool pattern[MAX_TRACKS][MAX_STEPS],
-                        int playStep) {
+                        int playStep,
+                        const char* const notes[MAX_TRACKS][MAX_STEPS]) {
     int cw = cellW();
     int ch = cellH();
 
@@ -214,6 +238,9 @@ void StepGrid::drawGlow(Framebuffer& fb,
                             cw - cellPad * 2, ch - cellPad * 2,
                             trackColor);
             }
+            drawCellNote(fb, cx, cy, cw, ch, notes ? notes[t][s] : nullptr,
+                         pattern[t][s] ? TEXT : TEXT_DIM,
+                         pattern[t][s] ? trackColor : bg_);
         }
     }
 
@@ -230,26 +257,33 @@ void StepGrid::drawGlow(Framebuffer& fb,
 void StepGrid::draw(Framebuffer& fb,
                     const bool pattern[MAX_TRACKS][MAX_STEPS],
                     int playStep,
-                    const uint8_t velocities[MAX_TRACKS][MAX_STEPS]) {
+                    const uint8_t velocities[MAX_TRACKS][MAX_STEPS],
+                    const char* const notes[MAX_TRACKS][MAX_STEPS]) {
     // Clear background
     fb.fillRect(x_, y_, w_, h_, bg_);
 
     switch (style_) {
         case StepGridStyle::SQUARES:
-            drawSquares(fb, pattern, playStep);
+            drawSquares(fb, pattern, playStep, notes);
             break;
         case StepGridStyle::BARS:
-            drawBars(fb, pattern, playStep, velocities);
+            drawBars(fb, pattern, playStep, velocities, notes);
             break;
         case StepGridStyle::DOTS:
-            drawDots(fb, pattern, playStep);
+            drawDots(fb, pattern, playStep, notes);
             break;
         case StepGridStyle::STRIPS:
-            drawStrips(fb, pattern, playStep);
+            drawStrips(fb, pattern, playStep, notes);
             break;
         case StepGridStyle::GLOW:
-            drawGlow(fb, pattern, playStep);
+            drawGlow(fb, pattern, playStep, notes);
             break;
+    }
+
+    if (activeTrack_ >= 0) {
+        int ay = cellY(activeTrack_);
+        int ah = cellH();
+        fb.drawRect(x_, ay, w_, ah, ACCENT_3);
     }
 }
 
@@ -292,6 +326,20 @@ bool StepGrid::handleTouch(const TouchState& touch,
     outTrack = track;
     outStep = step;
     return true;
+}
+
+void StepGrid::drawCellNote(Framebuffer& fb, int cx, int cy, int cw, int ch,
+                            const char* text, uint16_t fg, uint16_t bg) const {
+    if (!text || !text[0]) return;
+    // Need at least room for 3 chars (18px) + 2px padding
+    int minW = FONT_STEP * 2 + 2;
+    if (cw < minW) return;
+    // Center text in the cell
+    int tw = fb.textWidth(text);
+    if (tw > cw - 2) tw = cw - 2;
+    int tx = cx + (cw - tw) / 2;
+    int ty = cy + (ch - FONT_H) / 2;
+    fb.drawText(tx, ty, text, fg, bg);
 }
 
 } // namespace ui

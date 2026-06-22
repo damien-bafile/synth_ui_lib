@@ -67,4 +67,9 @@ constexpr uint16_t TRACK_5     = RGB565(137, 220, 235);  // sky
 constexpr uint16_t TRACK_6     = RGB565(203, 166, 247);  // mauve
 constexpr uint16_t TRACK_7     = RGB565(245, 194, 231);  // pink
 
+constexpr uint16_t TRACK_COLORS[8] = {
+    TRACK_0, TRACK_1, TRACK_2, TRACK_3,
+    TRACK_4, TRACK_5, TRACK_6, TRACK_7
+};
+
 } // namespace ui

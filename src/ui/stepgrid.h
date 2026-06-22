@@ -28,7 +28,8 @@ public:
     void draw(Framebuffer& fb,
               const bool pattern[MAX_TRACKS][MAX_STEPS],
               int playStep = -1,
-              const uint8_t velocities[MAX_TRACKS][MAX_STEPS] = nullptr);
+              const uint8_t velocities[MAX_TRACKS][MAX_STEPS] = nullptr,
+              const char* const notes[MAX_TRACKS][MAX_STEPS] = nullptr);
 
     bool handleTouch(const TouchState& touch, int& outTrack, int& outStep);
 
@@ -38,6 +39,8 @@ public:
                    uint16_t accent, uint16_t bg) noexcept;
     void setStepCount(int n) noexcept { steps_ = (n <= MAX_STEPS) ? n : MAX_STEPS; }
     void setTrackCount(int n) noexcept { tracks_ = (n <= MAX_TRACKS) ? n : MAX_TRACKS; }
+    void setActiveTrack(int track) noexcept;
+    int getActiveTrack() const noexcept { return activeTrack_; }
 
     int getX() const noexcept { return x_; }
     int getY() const noexcept { return y_; }
@@ -47,26 +50,35 @@ public:
     int getTrackCount() const noexcept { return tracks_; }
     StepGridStyle getStyle() const noexcept { return style_; }
 
-private:
-    void drawSquares(Framebuffer& fb,
-                     const bool pattern[MAX_TRACKS][MAX_STEPS], int playStep);
-    void drawBars(Framebuffer& fb,
-                  const bool pattern[MAX_TRACKS][MAX_STEPS], int playStep,
-                  const uint8_t velocities[MAX_TRACKS][MAX_STEPS]);
-    void drawDots(Framebuffer& fb,
-                  const bool pattern[MAX_TRACKS][MAX_STEPS], int playStep);
-    void drawStrips(Framebuffer& fb,
-                    const bool pattern[MAX_TRACKS][MAX_STEPS], int playStep);
-    void drawGlow(Framebuffer& fb,
-                  const bool pattern[MAX_TRACKS][MAX_STEPS], int playStep);
-
     int cellX(int step) const noexcept;
     int cellY(int track) const noexcept;
     int cellW() const noexcept;
     int cellH() const noexcept;
 
+private:
+    void drawSquares(Framebuffer& fb,
+                     const bool pattern[MAX_TRACKS][MAX_STEPS], int playStep,
+                     const char* const notes[MAX_TRACKS][MAX_STEPS]);
+    void drawBars(Framebuffer& fb,
+                  const bool pattern[MAX_TRACKS][MAX_STEPS], int playStep,
+                  const uint8_t velocities[MAX_TRACKS][MAX_STEPS],
+                  const char* const notes[MAX_TRACKS][MAX_STEPS]);
+    void drawDots(Framebuffer& fb,
+                  const bool pattern[MAX_TRACKS][MAX_STEPS], int playStep,
+                  const char* const notes[MAX_TRACKS][MAX_STEPS]);
+    void drawStrips(Framebuffer& fb,
+                    const bool pattern[MAX_TRACKS][MAX_STEPS], int playStep,
+                    const char* const notes[MAX_TRACKS][MAX_STEPS]);
+    void drawGlow(Framebuffer& fb,
+                  const bool pattern[MAX_TRACKS][MAX_STEPS], int playStep,
+                  const char* const notes[MAX_TRACKS][MAX_STEPS]);
+
+    void drawCellNote(Framebuffer& fb, int cx, int cy, int cw, int ch,
+                      const char* text, uint16_t fg, uint16_t bg) const;
+
     int x_, y_, w_, h_;
     int steps_, tracks_;
+    int activeTrack_;
     StepGridStyle style_;
     uint16_t trackColors_[MAX_TRACKS];
     uint16_t accent_;
