@@ -20,6 +20,7 @@
 #include "waveform.h"
 #include "meter_array.h"
 #include "xy_pad.h"
+#include "radial_dial.h"
 #include "rect.h"
 #include "layout.h"
 #include "page_layout.h"

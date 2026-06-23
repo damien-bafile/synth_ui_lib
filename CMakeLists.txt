@@ -26,6 +26,7 @@ set(UI_SOURCES
     src/ui/waveform.cpp
     src/ui/meter_array.cpp
     src/ui/xy_pad.cpp
+    src/ui/radial_dial.cpp
     src/ui/layout.cpp
     src/ui/page_layout.cpp
 )
