@@ -223,15 +223,15 @@ void Dropdown::paintExpandedListImpl(Framebuffer& fb, int selectedIndex) {
                 break;
             }
             case DropdownStyle::OUTLINED: {
-                uint16_t itemBg = (i == selectedIndex) ? BG_SURFACE : BG_DARK;
-                uint16_t itemFg = (i == selectedIndex) ? BG_DARK : TEXT;
+                uint16_t itemBg = (i == selectedIndex) ? accent_ : BG_DARK;
+                uint16_t itemFg = (i == selectedIndex) ? BG_DARK : fg_;
                 fb.fillRect(x_, iy, w_, ih, itemBg);
                 fb.drawRect(x_, iy, w_, ih, GRAY_MID);
                 int ty = iy + (ih - FONT_H) / 2;
                 if (icons_[i] != SynthIcon::NONE) {
                     fb.drawSynthIcon(x_ + 4, ty, icons_[i], itemFg, itemBg);
                 }
-                fb.drawText(x_ + 10, ty, items_[i], fg_, itemBg);
+                fb.drawText(x_ + 10, ty, items_[i], itemFg, itemBg);
                 break;
             }
             case DropdownStyle::UNDERLINED: {
