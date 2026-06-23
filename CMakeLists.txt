@@ -9,6 +9,22 @@ add_compile_options(-Wall -Wextra -Wpedantic)
 # Export compile commands for IDE support and tooling
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# Create a repo-root compile_commands.json for LSP integration.
+# Windows gets a copy; Unix-like systems get a symlink.
+if(WIN32)
+  execute_process(
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+      ${CMAKE_BINARY_DIR}/compile_commands.json
+      ${CMAKE_SOURCE_DIR}/compile_commands.json
+  )
+else()
+  execute_process(
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
+      ${CMAKE_BINARY_DIR}/compile_commands.json
+      ${CMAKE_SOURCE_DIR}/compile_commands.json
+  )
+endif()
+
 set(UI_SOURCES
     src/ui/framebuffer.cpp
     src/ui/touch.cpp
