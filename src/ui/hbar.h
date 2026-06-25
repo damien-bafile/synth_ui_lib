@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include "framebuffer.h"
+#include "touch.h"
 #include "colors.h"
 
 namespace ui {
@@ -11,6 +12,10 @@ public:
                   uint16_t fg = ACCENT_1, uint16_t bg = BG_DARK);
 
     void draw(Framebuffer& fb, float fraction);
+
+    // Map touch X to 0..1 based on stored width.  Returns false if touch is
+    // outside the bar or not pressed.
+    bool handleTouch(const TouchState& touch, float& outFraction) const;
 
     static void drawCenteredCents(Framebuffer& fb, int x, int y, int w, int h,
                                   float valCents, float maxCents,

@@ -11,12 +11,16 @@ public:
   enum class MarkerStyle : uint8_t { CIRCLE, CROSSHAIR, SQUARE };
 
   XYPad(int x, int y, int size, uint16_t fgColor = ACCENT_2,
-        uint16_t bgColor = BG_DARK, uint16_t gridColor = BG_MID) noexcept;
+        uint16_t bgColor = BG_DARK, uint16_t gridColor = BG_MID,
+        bool flipY = false) noexcept;
 
   void draw(Framebuffer& fb, float xValue, float yValue, MarkerStyle style = MarkerStyle::CIRCLE,
             bool showGrid = true, bool showLabels = false) const;
 
   bool handleTouch(const TouchState& touch, float& outX, float& outY);
+
+  void setFlipY(bool flip) { flipY_ = flip; }
+  bool flipY() const { return flipY_; }
 
 private:
   int x_, y_, size_;
@@ -25,6 +29,7 @@ private:
   uint16_t gridColor_;
   float lastX_;
   float lastY_;
+  bool flipY_;
 
   void drawMarker(Framebuffer& fb, int pixelX, int pixelY,
                   MarkerStyle style) const;

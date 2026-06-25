@@ -6,9 +6,9 @@
 namespace ui {
 
 XYPad::XYPad(int x, int y, int size, uint16_t fgColor, uint16_t bgColor,
-             uint16_t gridColor) noexcept
+             uint16_t gridColor, bool flipY) noexcept
     : x_(x), y_(y), size_(size), fgColor_(fgColor), bgColor_(bgColor),
-      gridColor_(gridColor), lastX_(0.5f), lastY_(0.5f) {}
+      gridColor_(gridColor), lastX_(0.5f), lastY_(0.5f), flipY_(flipY) {}
 
 void XYPad::draw(Framebuffer& fb, float xValue, float yValue, MarkerStyle style,
                  bool showGrid, bool showLabels) const {
@@ -28,7 +28,9 @@ void XYPad::draw(Framebuffer& fb, float xValue, float yValue, MarkerStyle style,
 
   // Calculate marker position
   int markerX = x_ + 2 + (int)(xValue * (size_ - 4));
-  int markerY = y_ + 2 + (int)(yValue * (size_ - 4));
+  int markerY = flipY_
+    ? y_ + size_ - 2 - (int)(yValue * (size_ - 4))
+    : y_ + 2 + (int)(yValue * (size_ - 4));
 
   // Draw marker
   drawMarker(fb, markerX, markerY, style);
@@ -57,7 +59,7 @@ bool XYPad::handleTouch(const TouchState& touch, float& outX,
     float normY = (float)(touch.y - y_) / (float)(size_ - 1);
 
     outX = clamp(normX, 0.0f, 1.0f);
-    outY = clamp(normY, 0.0f, 1.0f);
+    outY = flipY_ ? 1.0f - clamp(normY, 0.0f, 1.0f) : clamp(normY, 0.0f, 1.0f);
 
     lastX_ = outX;
     lastY_ = outY;

@@ -1,9 +1,19 @@
 #include "hbar.h"
+#include "rect.h"
 
 namespace ui {
 
 HorizontalBar::HorizontalBar(int x, int y, int w, int h, uint16_t fg, uint16_t bg)
     : x_(x), y_(y), w_(w), h_(h), fg_(fg), bg_(bg) {}
+
+bool HorizontalBar::handleTouch(const TouchState& touch, float& outFraction) const {
+    if (!touch.pressed) return false;
+    if (!Rect{x_, y_, w_, h_}.contains(touch.x, touch.y)) return false;
+    outFraction = (float)(touch.x - x_) / (float)w_;
+    if (outFraction < 0.0f) outFraction = 0.0f;
+    if (outFraction > 1.0f) outFraction = 1.0f;
+    return true;
+}
 
 void HorizontalBar::draw(Framebuffer& fb, float fraction) {
     int fw = static_cast<int>(w_ * fraction);
