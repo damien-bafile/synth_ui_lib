@@ -1,42 +1,36 @@
 #include "textfield.h"
-#include "rect.h"
 #include "font.h"
 #include <cstring>
 
 namespace ui {
 
-TextField::TextField(int x, int y, int w, int h, uint16_t fg, uint16_t bg)
-    : x_(x), y_(y), w_(w), h_(h), fg_(fg), bg_(bg) {}
+TextField::TextField(int x, int y, int w, int h,
+                     uint16_t fg, uint16_t bg)
+    : fg_(fg), bg_(bg) {
+    setBounds(x, y, w, h);
+}
 
 void TextField::draw(Framebuffer& fb, const char* text, int cursorPos, bool focused) {
-    int pad = 3;
-    int innerW = w_ - pad * 2;
-    int innerH = h_ - pad * 2;
-    if (innerW < 1 || innerH < 1) return;
-
-    fb.drawRect(x_, y_, w_, h_, fg_);
-    fb.fillRect(x_ + 1, y_ + 1, w_ - 2, h_ - 2, BG_SURFACE);
+    fb.fillRect(x_, y_, w_, h_, bg_);
+    fb.drawRect(x_, y_, w_, h_, focused ? fg_ : GRAY_DARK);
 
     if (!text) return;
 
-    int maxChars = innerW / 6;
     int textLen = static_cast<int>(std::strlen(text));
+    int maxVisible = w_ / FONT_STEP;
+    if (maxVisible < 1) maxVisible = 1;
 
-    int drawLen = textLen;
     int offset = 0;
-    if (drawLen > maxChars) {
-        if (cursorPos > maxChars / 2) {
-            offset = cursorPos - maxChars / 2;
-            if (offset > textLen - maxChars)
-                offset = textLen - maxChars;
-            if (offset < 0) offset = 0;
-        }
-        drawLen = maxChars;
+    if (cursorPos > maxVisible - 1) {
+        offset = cursorPos - maxVisible + 1;
     }
+    int drawLen = textLen - offset;
+    if (drawLen > maxVisible) drawLen = maxVisible;
 
-    int tx = x_ + pad;
+    int tx = x_ + 2;
     int ty = y_ + (h_ - FONT_H) / 2;
-    for (int i = 0; i < drawLen && (offset + i) < textLen; i++) {
+
+    for (int i = 0; i < drawLen; i++) {
         fb.drawChar(tx + i * FONT_STEP, ty, text[offset + i], fg_, BG_SURFACE);
     }
 
@@ -47,9 +41,8 @@ void TextField::draw(Framebuffer& fb, const char* text, int cursorPos, bool focu
     }
 }
 
-bool TextField::handleTouch(const TouchState& touch) {
-    return touch.pressed &&
-           Rect{x_, y_, w_, h_}.contains(touch.x, touch.y);
+void TextField::onTap(const TouchEvent&) {
+    wasTapped_ = true;
 }
 
 } // namespace ui

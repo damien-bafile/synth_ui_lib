@@ -184,8 +184,9 @@ void Framebuffer::fillCircle(int xc, int yc, int r, uint16_t color) {
 }
 
 void Framebuffer::drawChar(int x, int y, char c, uint16_t fg, uint16_t bg) {
-    if (c < 32 || c > 127) c = '?';
-    int glyph = c - 32;
+    unsigned char uc = static_cast<unsigned char>(c);
+    if (uc < 32 || uc > 127) c = '?';
+    int glyph = static_cast<unsigned char>(c) - 32;
 
     for (int col = 0; col < 5; col++) {
         unsigned char bits = font_5x7[glyph * 5 + col];

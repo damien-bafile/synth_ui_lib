@@ -5,9 +5,9 @@ namespace ui {
 
 StepGrid::StepGrid(int x, int y, int w, int h,
                    int steps, int tracks, StepGridStyle style)
-    : x_(x), y_(y), w_(w), h_(h),
-      steps_(steps), tracks_(tracks), activeTrack_(-1), style_(style),
+    : steps_(steps), tracks_(tracks), activeTrack_(-1), style_(style),
       accent_(ACCENT_2), bg_(BG_DARK) {
+    setBounds(x, y, w, h);
     uint16_t defaults[MAX_TRACKS] = {
         TRACK_0, TRACK_1, TRACK_2, TRACK_3,
         TRACK_4, TRACK_5, TRACK_6, TRACK_7
@@ -58,10 +58,62 @@ int StepGrid::cellY(int track) const noexcept {
     return y_ + track * cellH();
 }
 
+bool StepGrid::mapTouch(int tx, int ty, int& outTrack, int& outStep) const {
+    outTrack = -1;
+    outStep = -1;
+
+    if (tx < x_ || tx >= x_ + w_) return false;
+    if (ty < y_ || ty >= y_ + h_) return false;
+
+    int ch = cellH();
+    if (ch <= 0) return false;
+    int track = (ty - y_) / ch;
+    if (track < 0 || track >= tracks_) return false;
+
+    int beats = (steps_ + 3) / 4;
+    if (beats < 1) beats = 1;
+    int beatGap = 2;
+    int beatW = (w_ - beatGap * (beats - 1)) / beats;
+    int cw = beatW / 4;
+    if (cw <= 0) return false;
+
+    int relX = tx - x_;
+    int beat = relX / (beatW + beatGap);
+    if (beat < 0) beat = 0;
+    if (beat >= beats) beat = beats - 1;
+    int inBeatX = relX - beat * (beatW + beatGap);
+    if (inBeatX > beatW) inBeatX = beatW;
+    int inBeat = inBeatX / cw;
+    if (inBeat < 0) inBeat = 0;
+    if (inBeat > 3) inBeat = 3;
+
+    int step = beat * 4 + inBeat;
+    if (step >= steps_) step = steps_ - 1;
+    if (step < 0) step = 0;
+
+    outTrack = track;
+    outStep = step;
+    return true;
+}
+
+bool StepGrid::onTouchBegan(const TouchEvent& event) {
+    return mapTouch(event.x, event.y, touchedTrack_, touchedStep_);
+}
+
+bool StepGrid::onTouchMoved(const TouchEvent& event) {
+    mapTouch(event.x, event.y, touchedTrack_, touchedStep_);
+    return true;
+}
+
+void StepGrid::onTouchEnded(const TouchEvent&) {
+    touchedTrack_ = -1;
+    touchedStep_ = -1;
+}
+
 void StepGrid::drawSquares(Framebuffer& fb,
                            const bool pattern[MAX_TRACKS][MAX_STEPS],
-                         int playStep,
-                         const char* const notes[MAX_TRACKS][MAX_STEPS]) {
+                           int playStep,
+                           const char* const notes[MAX_TRACKS][MAX_STEPS]) {
     int cw = cellW();
     int ch = cellH();
     int pad = 2;
@@ -72,11 +124,9 @@ void StepGrid::drawSquares(Framebuffer& fb,
             int cy = cellY(t);
             uint16_t trackColor = trackColors_[t];
             if (pattern[t][s]) {
-                fb.fillRect(cx + pad, cy + pad, cw - pad * 2, ch - pad * 2,
-                            trackColor);
+                fb.fillRect(cx + pad, cy + pad, cw - pad * 2, ch - pad * 2, trackColor);
             } else {
-                fb.drawRect(cx + pad, cy + pad, cw - pad * 2, ch - pad * 2,
-                            trackColor);
+                fb.drawRect(cx + pad, cy + pad, cw - pad * 2, ch - pad * 2, trackColor);
             }
             drawCellNote(fb, cx, cy, cw, ch, notes ? notes[t][s] : nullptr,
                          pattern[t][s] ? TEXT : TEXT_DIM,
@@ -170,7 +220,6 @@ void StepGrid::drawStrips(Framebuffer& fb,
     int cw = cellW();
     int stripH = h_ / tracks_;
 
-    // Draw beat dividers
     int beats = (steps_ + 3) / 4;
     int beatGap = 2;
     int beatW = (w_ - beatGap * (beats - 1)) / beats;
@@ -188,8 +237,7 @@ void StepGrid::drawStrips(Framebuffer& fb,
             if (pattern[t][s]) {
                 int cellPad = 1;
                 fb.fillRect(cx + cellPad, trackY + cellPad,
-                            cw - cellPad * 2, stripH - cellPad * 2,
-                            trackColor);
+                            cw - cellPad * 2, stripH - cellPad * 2, trackColor);
             } else {
                 int dashW = (cw > 4) ? 3 : cw - 2;
                 int dashH = 2;
@@ -224,7 +272,6 @@ void StepGrid::drawGlow(Framebuffer& fb,
             int cy = cellY(t);
             uint16_t trackColor = trackColors_[t];
 
-            // Sub-step background mark (always visible)
             int subW = cw / 3;
             if (subW < 2) subW = 2;
             int subH = 2;
@@ -233,10 +280,7 @@ void StepGrid::drawGlow(Framebuffer& fb,
             fb.fillRect(subX, subY, subW, subH, GRAY_DARK);
 
             if (pattern[t][s]) {
-                int cellPad = 0;
-                fb.fillRect(cx + cellPad, cy + cellPad,
-                            cw - cellPad * 2, ch - cellPad * 2,
-                            trackColor);
+                fb.fillRect(cx, cy, cw, ch, trackColor);
             }
             drawCellNote(fb, cx, cy, cw, ch, notes ? notes[t][s] : nullptr,
                          pattern[t][s] ? TEXT : TEXT_DIM,
@@ -246,9 +290,7 @@ void StepGrid::drawGlow(Framebuffer& fb,
 
     if (playStep >= 0 && playStep < steps_) {
         int cx = cellX(playStep) + cw / 2;
-        // Outer glow line
         fb.drawLine(cx - 1, y_, cx - 1, y_ + h_, GRAY_MID);
-        // Inner accent line
         fb.drawLine(cx, y_, cx, y_ + h_, accent_);
         fb.drawLine(cx + 1, y_, cx + 1, y_ + h_, GRAY_MID);
     }
@@ -259,7 +301,6 @@ void StepGrid::draw(Framebuffer& fb,
                     int playStep,
                     const uint8_t velocities[MAX_TRACKS][MAX_STEPS],
                     const char* const notes[MAX_TRACKS][MAX_STEPS]) {
-    // Clear background
     fb.fillRect(x_, y_, w_, h_, bg_);
 
     switch (style_) {
@@ -287,54 +328,11 @@ void StepGrid::draw(Framebuffer& fb,
     }
 }
 
-bool StepGrid::handleTouch(const TouchState& touch,
-                           int& outTrack, int& outStep) {
-    outTrack = -1;
-    outStep = -1;
-
-    if (!touch.pressed) return false;
-    if (touch.x < x_ || touch.x >= x_ + w_) return false;
-    if (touch.y < y_ || touch.y >= y_ + h_) return false;
-
-    int ch = cellH();
-    if (ch <= 0) return false;
-    int track = (touch.y - y_) / ch;
-    if (track < 0 || track >= tracks_) return false;
-
-    // Find which beat the touch landed in
-    int beats = (steps_ + 3) / 4;
-    if (beats < 1) beats = 1;
-    int beatGap = 2;
-    int beatW = (w_ - beatGap * (beats - 1)) / beats;
-    int cw = beatW / 4;
-    if (cw <= 0) return false;
-
-    int relX = touch.x - x_;
-    int beat = relX / (beatW + beatGap);
-    if (beat < 0) beat = 0;
-    if (beat >= beats) beat = beats - 1;
-    int inBeatX = relX - beat * (beatW + beatGap);
-    if (inBeatX > beatW) inBeatX = beatW;
-    int inBeat = inBeatX / cw;
-    if (inBeat < 0) inBeat = 0;
-    if (inBeat > 3) inBeat = 3;
-
-    int step = beat * 4 + inBeat;
-    if (step >= steps_) step = steps_ - 1;
-    if (step < 0) step = 0;
-
-    outTrack = track;
-    outStep = step;
-    return true;
-}
-
 void StepGrid::drawCellNote(Framebuffer& fb, int cx, int cy, int cw, int ch,
                             const char* text, uint16_t fg, uint16_t bg) const {
     if (!text || !text[0]) return;
-    // Need at least room for 3 chars (18px) + 2px padding
     int minW = FONT_STEP * 2 + 2;
     if (cw < minW) return;
-    // Center text in the cell
     int tw = fb.textWidth(text);
     if (tw > cw - 2) tw = cw - 2;
     int tx = cx + (cw - tw) / 2;

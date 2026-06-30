@@ -1,13 +1,13 @@
 #pragma once
 #include <cstdint>
 #include "rect.h"
+#include "touch_event.h"
 #include "framebuffer.h"
-#include "touch.h"
 
 namespace ui {
 
 using PageDrawFn  = void (*)(Framebuffer& fb);
-using PageTouchFn = bool (*)(const TouchState& touch);
+using PageTouchFn = bool (*)(const TouchEvent& touch);
 
 struct Page {
     const char* name;
@@ -29,7 +29,7 @@ public:
     int  pageCount() const noexcept;
 
     void draw(Framebuffer& fb) const;
-    bool handleTouch(const TouchState& touch) const;
+    bool handleTouch(const TouchEvent& touch) const;
 
     Rect drawTabBar(Framebuffer& fb, int x, int y, int w, int h,
                     uint16_t fg, uint16_t bg, uint16_t activeBg) const;

@@ -9,7 +9,7 @@ namespace ui {
 RadialDial::RadialDial(int x, int y, int radius,
                        float min, float max, float value, int steps,
                        uint16_t fg, uint16_t bg, uint16_t track) noexcept
-    : x_(x), y_(y), radius_(radius),
+    : radius_(radius),
       min_(min), max_(max), value_(value),
       steps_(steps > 1 ? steps : 1),
       fg_(fg), bg_(bg), track_(track),
@@ -19,9 +19,9 @@ RadialDial::RadialDial(int x, int y, int radius,
       fontScale_(1),
       startAngle_(135.0f),
       sweep_(270.0f),
-      suffix_(nullptr), showSign_(false),
-      wasPressed_(false), isDragging_(false),
-      touchStartX_(0), touchStartY_(0), lastX_(0), lastY_(0) {}
+      suffix_(nullptr), showSign_(false) {
+    setBounds(x - radius, y - radius, radius * 2, radius * 2);
+}
 
 void RadialDial::setColors(uint16_t fg, uint16_t bg, uint16_t track) noexcept {
     fg_ = fg;
@@ -71,27 +71,20 @@ void RadialDial::clearLabel() noexcept {
 void RadialDial::draw(Framebuffer& fb, float value, bool active) const {
     value = ui::clamp(value, min_, max_);
 
-    // Circular face
     fb.fillCircle(x_, y_, radius_, bg_);
     fb.drawCircle(x_, y_, radius_, track_);
 
-    // Track arc (unfilled background)
     const float endAngle = startAngle_ + sweep_;
     const int innerR = radius_ - arcThickness_;
     drawArc(fb, startAngle_, endAngle, innerR, radius_, track_);
 
-    // Filled value arc
     const float valueAngle = valueToAngle(value);
     uint16_t arcColor = active ? fg_ : track_;
     drawArc(fb, startAngle_, valueAngle, innerR, radius_, arcColor);
 
-    // Step ticks
     drawTicks(fb);
-
-    // Center value
     drawCenterValue(fb, value, active);
 
-    // Optional label
     if (label_ && labelPos_ != LABEL_NONE) {
         int lx = x_, ly = y_;
         int tw = static_cast<int>(std::strlen(label_)) * FONT_W * fontScale_;
@@ -118,67 +111,26 @@ void RadialDial::draw(Framebuffer& fb, float value, bool active) const {
     }
 }
 
-bool RadialDial::handleTouch(const TouchState& touch, float& outValue,
-                             bool& outToggled) {
-    outToggled = false;
-    bool changed = false;
+bool RadialDial::onTouchBegan(const TouchEvent& event) {
+    if (!isInside(event.x, event.y)) return false;
+    dragStartValue_ = value_;
+    return true;
+}
 
-    if (touch.pressed) {
-        if (!wasPressed_) {
-            // Touch down
-            wasPressed_ = true;
-            touchStartX_ = touch.x;
-            touchStartY_ = touch.y;
-            lastX_ = touch.x;
-            lastY_ = touch.y;
-            isDragging_ = false;
-        } else {
-            // Touch continue
-            int dx = touch.x - touchStartX_;
-            int dy = touch.y - touchStartY_;
-            if (!isDragging_ &&
-                (std::abs(dx) > kDragThresholdPx ||
-                 std::abs(dy) > kDragThresholdPx)) {
-                isDragging_ = true;
-            }
+void RadialDial::onDragMoved(const TouchEvent& /*event*/, int /*dx*/, int dy) {
+    float range = max_ - min_;
+    float sensitivity = (range > 0.0f) ? range / (2.0f * radius_) : 0.0f;
+    float delta = -static_cast<float>(dy) * sensitivity;
+    value_ = ui::clamp(dragStartValue_ + delta, min_, max_);
+    value_ = snap(value_);
+}
 
-            if (isDragging_) {
-                float range = max_ - min_;
-                // Dragging the full diameter covers the full range.
-                float sensitivity = (range > 0.0f)
-                                        ? range / (2.0f * radius_)
-                                        : 0.0f;
-                float delta = -static_cast<float>(touch.y - lastY_) * sensitivity;
-                float newValue = ui::clamp(value_ + delta, min_, max_);
-                newValue = snap(newValue);
-                if (newValue != value_) {
-                    value_ = newValue;
-                    changed = true;
-                }
-            }
+void RadialDial::onTap(const TouchEvent&) {
+    wasToggled_ = true;
+}
 
-            lastX_ = touch.x;
-            lastY_ = touch.y;
-        }
-    } else {
-        if (wasPressed_) {
-            // Touch release
-            int dx = lastX_ - touchStartX_;
-            int dy = lastY_ - touchStartY_;
-            if (!isDragging_ &&
-                std::abs(dx) <= kDragThresholdPx &&
-                std::abs(dy) <= kDragThresholdPx &&
-                isInside(touchStartX_, touchStartY_)) {
-                outToggled = true;
-                changed = true;
-            }
-            wasPressed_ = false;
-            isDragging_ = false;
-        }
-    }
-
-    outValue = value_;
-    return changed;
+void RadialDial::onDragEnded(const TouchEvent&) {
+    // No cleanup needed — dragStartValue_ will be reset on next Began
 }
 
 float RadialDial::snap(float v) const {
@@ -217,7 +169,6 @@ void RadialDial::drawArc(Framebuffer& fb, float startAngle, float endAngle,
 
     for (int i = 0; i <= segments; ++i) {
         float a = startAngle + i * direction;
-        // Clamp final iteration to the exact end angle to avoid over/under-draw.
         if (i == segments) a = endAngle;
 
         float rad = a * kPi / 180.0f;
@@ -283,9 +234,7 @@ void RadialDial::drawCenterValue(Framebuffer& fb, float value, bool active) cons
     char buf[16];
     int pos = 0;
     float rounded = std::round(value);
-    if (showSign_ && value > 0.0f) {
-        buf[pos++] = '+';
-    }
+    if (showSign_ && value > 0.0f) buf[pos++] = '+';
     if (std::abs(rounded - value) < 0.001f) {
         pos += std::snprintf(buf + pos, sizeof(buf) - pos, "%d", static_cast<int>(rounded));
     } else {
@@ -306,8 +255,9 @@ void RadialDial::drawCenterValue(Framebuffer& fb, float value, bool active) cons
 
 void RadialDial::drawScaledChar(Framebuffer& fb, int x, int y, char c,
                                 uint16_t fg, uint16_t bg, int scale) {
-    if (c < 32 || c > 127) c = '?';
-    int glyph = c - 32;
+    unsigned char uc = static_cast<unsigned char>(c);
+    if (uc < 32 || uc > 127) c = '?';
+    int glyph = static_cast<unsigned char>(c) - 32;
 
     for (int col = 0; col < FONT_W; ++col) {
         unsigned char bits = font_5x7[glyph * FONT_W + col];

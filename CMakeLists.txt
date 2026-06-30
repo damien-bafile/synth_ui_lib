@@ -28,6 +28,8 @@ endif()
 set(UI_SOURCES
     src/ui/framebuffer.cpp
     src/ui/touch.cpp
+    src/ui/widget.cpp
+    src/ui/touch_dispatcher.cpp
     src/ui/button.cpp
     src/ui/slider.cpp
     src/ui/toggle.cpp

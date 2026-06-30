@@ -1,12 +1,13 @@
 #include "slider.h"
-#include "rect.h"
 
 namespace ui {
 
 Slider::Slider(int x, int y, int w, int h, float min, float max,
                const char* label, uint16_t fg, uint16_t bg, bool vertical)
-    : x_(x), y_(y), w_(w), h_(h), min_(min), max_(max),
-      label_(label), fg_(fg), bg_(bg), vertical_(vertical) {}
+    : min_(min), max_(max), value_(min),
+      label_(label), fg_(fg), bg_(bg), vertical_(vertical) {
+    setBounds(x, y, w, h);
+}
 
 void Slider::draw(Framebuffer& fb, float value) {
     if (vertical_) {
@@ -67,10 +68,25 @@ void Slider::draw(Framebuffer& fb, float value) {
     }
 }
 
-bool Slider::handleTouch(const TouchState& touch) {
-    if (!touch.pressed) return false;
+bool Slider::onTouchBegan(const TouchEvent& event) {
+    return contains(event.x, event.y);
+}
 
-    return Rect{x_, y_, w_, h_}.contains(touch.x, touch.y);
+void Slider::onDragMoved(const TouchEvent& event, int /*dx*/, int /*dy*/) {
+    float range = max_ - min_;
+    if (range <= 0.0f) return;
+
+    if (vertical_) {
+        float frac = 1.0f - (float)(event.y - y()) / height();
+        if (frac < 0.0f) frac = 0.0f;
+        if (frac > 1.0f) frac = 1.0f;
+        value_ = min_ + frac * range;
+    } else {
+        float frac = (float)(event.x - x()) / width();
+        if (frac < 0.0f) frac = 0.0f;
+        if (frac > 1.0f) frac = 1.0f;
+        value_ = min_ + frac * range;
+    }
 }
 
 } // namespace ui

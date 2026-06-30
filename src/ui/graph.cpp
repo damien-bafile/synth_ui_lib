@@ -30,9 +30,10 @@ static uint16_t lerp565(uint16_t c1, uint16_t c2, float t) {
 Graph::Graph(int x, int y, int w, int h,
              uint16_t lineColor, uint16_t fillColor1,
              uint16_t fillColor2, uint16_t bg)
-    : x_(x), y_(y), w_(w), h_(h),
-      lineColor_(lineColor), fillColor1_(fillColor1),
-      fillColor2_(fillColor2), bg_(bg), selectedPoint_(-1) {}
+    : lineColor_(lineColor), fillColor1_(fillColor1),
+      fillColor2_(fillColor2), bg_(bg) {
+    setBounds(x, y, w, h);
+}
 
 void Graph::envToPoints(const AdsrEnvelope& env, int pts[4][2]) const {
     int gw = w_ - PADDING * 2;
@@ -41,29 +42,19 @@ void Graph::envToPoints(const AdsrEnvelope& env, int pts[4][2]) const {
     float totalTime = env.attack_ms + env.decay_ms + env.release_ms;
     if (totalTime < 1.0f) totalTime = 1.0f;
 
-    // Fixed total for S position (independent of D)
     float fixedTotal = ADSR_ATTACK_MAX_MS + ADSR_DECAY_MAX_MS + ADSR_RELEASE_MAX_MS;
 
-    // point 0: attack peak (top)
     pts[0][0] = x_ + PADDING + (int)(gw * env.attack_ms / totalTime);
     pts[0][1] = y_ + PADDING;
 
-    // point 1: decay end (at sustain level)
     pts[1][0] = x_ + PADDING + (int)(gw * (env.attack_ms + env.decay_ms) / totalTime);
     pts[1][1] = y_ + PADDING + (int)(gh * (1.0f - env.sustain_level));
 
-    // point 2: sustain end (where release begins) - uses fixed total so S doesn't move with D
     pts[2][0] = x_ + PADDING + gw - (int)(gw * env.release_ms / fixedTotal);
-    // Ensure S is always to the right of D
-    if (pts[2][0] <= pts[1][0] + 2) {
-        pts[2][0] = pts[1][0] + 3;
-    }
-    if (pts[2][0] > x_ + PADDING + gw - 2) {
-        pts[2][0] = x_ + PADDING + gw - 2;
-    }
-    pts[2][1] = pts[1][1];  // same level as decay end
+    if (pts[2][0] <= pts[1][0] + 2) pts[2][0] = pts[1][0] + 3;
+    if (pts[2][0] > x_ + PADDING + gw - 2) pts[2][0] = x_ + PADDING + gw - 2;
+    pts[2][1] = pts[1][1];
 
-    // point 3: release end (bottom right)
     pts[3][0] = x_ + PADDING + gw;
     pts[3][1] = y_ + PADDING + gh;
 }
@@ -74,7 +65,6 @@ void Graph::pointsToEnv(const int pts[4][2], AdsrEnvelope& env) const {
     if (gw < 1) gw = 1;
     if (gh < 1) gh = 1;
 
-    // x positions normalized to 0..1
     float ax = (float)(pts[0][0] - x_ - PADDING) / gw;
     float dx = (float)(pts[1][0] - x_ - PADDING) / gw;
     float sx = (float)(pts[2][0] - x_ - PADDING) / gw;
@@ -86,19 +76,16 @@ void Graph::pointsToEnv(const int pts[4][2], AdsrEnvelope& env) const {
     if (rx <= sx) rx = sx + 0.01f;
     if (rx > 1.0f) rx = 1.0f;
 
-    // y position of sustain (invert: top=1.0, bottom=0.0)
     float susY = 1.0f - (float)(pts[1][1] - y_ - PADDING) / gh;
     if (susY < 0.0f) susY = 0.0f;
     if (susY > 1.0f) susY = 1.0f;
 
-    // distribute times proportionally
     float totalMs = ADSR_ATTACK_MAX_MS + ADSR_DECAY_MAX_MS + ADSR_RELEASE_MAX_MS;
     env.attack_ms     = ax * totalMs;
     env.decay_ms      = (dx - ax) * totalMs;
     env.sustain_level = susY;
-    env.release_ms    = (rx - sx) * totalMs;  // release from S point, not D point
+    env.release_ms    = (rx - sx) * totalMs;
 
-    // clamp
     if (env.attack_ms < 0.0f) env.attack_ms = 0.0f;
     if (env.attack_ms > ADSR_ATTACK_MAX_MS) env.attack_ms = ADSR_ATTACK_MAX_MS;
     if (env.decay_ms < 0.0f) env.decay_ms = 0.0f;
@@ -111,19 +98,16 @@ void Graph::draw(Framebuffer& fb, const AdsrEnvelope& env) {
     int pts[4][2];
     envToPoints(env, pts);
 
-    // background
     fb.fillRect(x_, y_, w_, h_, bg_);
 
     int gw = w_ - PADDING * 2;
     int gh = h_ - PADDING * 2 - LABEL_H;
 
-    // grid lines (horizontal)
     for (int i = 0; i <= 4; i++) {
         int gy = y_ + PADDING + (gh * i) / 4;
         fb.fillRect(x_ + PADDING, gy, gw, 1, GRAY_DARK);
     }
 
-    // grid lines (vertical) at attack, decay, and sustain boundaries
     if (pts[0][0] > x_ + PADDING)
         fb.fillRect(pts[0][0], y_ + PADDING, 1, gh, GRAY_DARK);
     if (pts[1][0] > x_ + PADDING && pts[1][0] < x_ + PADDING + gw)
@@ -131,8 +115,7 @@ void Graph::draw(Framebuffer& fb, const AdsrEnvelope& env) {
     if (pts[2][0] > pts[1][0] + 2 && pts[2][0] < x_ + PADDING + gw)
         fb.fillRect(pts[2][0], y_ + PADDING, 1, gh, GRAY_DARK);
 
-    // gradient fill under curve
-    int baseY = y_ + PADDING + gh; // bottom of graph
+    int baseY = y_ + PADDING + gh;
     int peakY = pts[0][1];
     int decayEndY = pts[1][1];
     int sustainEndX = pts[2][0];
@@ -140,8 +123,6 @@ void Graph::draw(Framebuffer& fb, const AdsrEnvelope& env) {
 
     for (int row = 0; row < gh; row++) {
         int fy = y_ + PADDING + row;
-
-        // skip rows above the peak or below baseline
         if (fy < peakY || fy >= baseY) continue;
 
         float t = (float)row / gh;
@@ -149,7 +130,6 @@ void Graph::draw(Framebuffer& fb, const AdsrEnvelope& env) {
 
         int curveLeft, curveRight;
 
-        // Left edge: always on attack line (from baseY at left to peakY at peak)
         int attackLineH = baseY - peakY;
         if (attackLineH > 0) {
             float frac = (float)(fy - peakY) / attackLineH;
@@ -158,9 +138,7 @@ void Graph::draw(Framebuffer& fb, const AdsrEnvelope& env) {
             curveLeft = x_ + PADDING;
         }
 
-        // Right edge: depends on region
         if (fy <= decayEndY) {
-            // Between peak and sustain level: on decay line (peak to sustain)
             int decayLineH = decayEndY - peakY;
             if (decayLineH > 0) {
                 float frac = (float)(fy - peakY) / decayLineH;
@@ -169,7 +147,6 @@ void Graph::draw(Framebuffer& fb, const AdsrEnvelope& env) {
                 curveRight = pts[1][0];
             }
         } else {
-            // Below sustain level: on release line (sustain to bottom-right)
             int releaseLineH = baseY - decayEndY;
             if (releaseLineH > 0) {
                 float frac = (float)(fy - decayEndY) / releaseLineH;
@@ -188,24 +165,17 @@ void Graph::draw(Framebuffer& fb, const AdsrEnvelope& env) {
         }
     }
 
-    // draw curve lines
-    // attack: baseline-left to peak
     fb.drawLine(x_ + PADDING, baseY, pts[0][0], pts[0][1], lineColor_);
-    // decay: peak to sustain
     fb.drawLine(pts[0][0], pts[0][1], pts[1][0], pts[1][1], lineColor_);
-    // sustain: horizontal hold
     fb.drawLine(pts[1][0], pts[1][1], pts[2][0], pts[2][1], lineColor_);
-    // release: sustain to baseline-right
     fb.drawLine(pts[2][0], pts[2][1], pts[3][0], pts[3][1], lineColor_);
 
-    // control points
     for (int i = 0; i < 4; i++) {
         uint16_t c = (i == selectedPoint_) ? HIGHLIGHT : lineColor_;
         fb.fillCircle(pts[i][0], pts[i][1], POINT_RADIUS, c);
         fb.drawCircle(pts[i][0], pts[i][1], POINT_RADIUS, WHITE);
     }
 
-    // labels below graph
     const char* labels[] = {"A", "D", "S", "R"};
     int labelY = y_ + h_ - LABEL_H;
     for (int i = 0; i < 4; i++) {
@@ -215,121 +185,66 @@ void Graph::draw(Framebuffer& fb, const AdsrEnvelope& env) {
     }
 }
 
-bool Graph::handleTouch(const TouchState& touch, AdsrEnvelope& env) {
-    if (!touch.pressed) {
-        selectedPoint_ = -1;
-        return false;
+bool Graph::onTouchBegan(const TouchEvent& event) {
+    int pts[4][2];
+    envToPoints(env_, pts);
+
+    for (int i = 0; i < 4; i++) {
+        int dx = event.x - pts[i][0];
+        int dy = event.y - pts[i][1];
+        if (dx * dx + dy * dy <= TOUCH_RADIUS * TOUCH_RADIUS) {
+            selectedPoint_ = i;
+            return true;
+        }
     }
+    return false;
+}
+
+bool Graph::onTouchMoved(const TouchEvent& event) {
+    if (selectedPoint_ < 0) return true;
 
     int pts[4][2];
-    envToPoints(env, pts);
+    envToPoints(env_, pts);
 
-    // check if touching near a point
-    if (selectedPoint_ < 0) {
-        for (int i = 0; i < 4; i++) {
-            int dx = touch.x - pts[i][0];
-            int dy = touch.y - pts[i][1];
-            if (dx * dx + dy * dy <= TOUCH_RADIUS * TOUCH_RADIUS) {
-                selectedPoint_ = i;
-                return true;
-            }
-        }
-        return false;
-    }
-
-    // dragging selected point
     int minX = x_ + PADDING;
     int maxX = x_ + w_ - PADDING;
     int minY = y_ + PADDING;
     int maxY = y_ + PADDING + (h_ - PADDING * 2 - LABEL_H);
 
-    int newX = touch.x;
-    int newY = touch.y;
+    int newX = event.x;
+    int newY = event.y;
     if (newX < minX) newX = minX;
     if (newX > maxX) newX = maxX;
     if (newY < minY) newY = minY;
     if (newY > maxY) newY = maxY;
 
-    // constrain x ordering
     if (selectedPoint_ == 0) {
-        // attack: can't go past decay point
         if (newX >= pts[1][0] - 2) newX = pts[1][0] - 3;
     } else if (selectedPoint_ == 1) {
-        // decay: can't go before attack or past sustain
         if (newX <= pts[0][0] + 2) newX = pts[0][0] + 3;
         if (newX >= pts[2][0] - 2) newX = pts[2][0] - 3;
     } else if (selectedPoint_ == 2) {
-        // sustain: can't go before decay or past release
         if (newX <= pts[1][0] + 2) newX = pts[1][0] + 3;
         if (newX >= pts[3][0] - 2) newX = pts[3][0] - 3;
     } else if (selectedPoint_ == 3) {
-        // release end: can't go before sustain
         if (newX <= pts[2][0] + 2) newX = pts[2][0] + 3;
     }
 
     pts[selectedPoint_][0] = newX;
     pts[selectedPoint_][1] = newY;
 
-    // D and S share the same y (sustain level)
     if (selectedPoint_ == 1) {
         pts[2][1] = pts[1][1];
     } else if (selectedPoint_ == 2) {
         pts[1][1] = pts[2][1];
     }
 
-    // Update only the parameter(s) affected by the dragged point
-    int gw = w_ - PADDING * 2;
-    int gh = h_ - PADDING * 2 - LABEL_H;
-    if (gw < 1) gw = 1;
-    if (gh < 1) gh = 1;
-
-    switch (selectedPoint_) {
-      case 0: { // Attack: only changes attack_ms
-        float totalTime = env.attack_ms + env.decay_ms + env.release_ms;
-        if (totalTime < 1.0f) totalTime = 1.0f;
-        float ax = (float)(pts[0][0] - x_ - PADDING) / gw;
-        if (ax < 0.0f) ax = 0.0f;
-        env.attack_ms = ax * totalTime;
-        break;
-      }
-      case 1: { // Decay: changes decay_ms (x) and sustain_level (y)
-        float totalTime = env.attack_ms + env.decay_ms + env.release_ms;
-        if (totalTime < 1.0f) totalTime = 1.0f;
-        float ax = (float)(pts[0][0] - x_ - PADDING) / gw;
-        float dx = (float)(pts[1][0] - x_ - PADDING) / gw;
-        if (dx <= ax) dx = ax + 0.01f;
-        env.decay_ms = (dx - ax) * totalTime;
-        float susY = 1.0f - (float)(pts[1][1] - y_ - PADDING) / gh;
-        if (susY < 0.0f) susY = 0.0f;
-        if (susY > 1.0f) susY = 1.0f;
-        env.sustain_level = susY;
-        break;
-      }
-      case 2: { // Sustain: changes sustain_level (y) and release_ms (x)
-        float fixedTotal = ADSR_ATTACK_MAX_MS + ADSR_DECAY_MAX_MS + ADSR_RELEASE_MAX_MS;
-        float susY = 1.0f - (float)(pts[2][1] - y_ - PADDING) / gh;
-        if (susY < 0.0f) susY = 0.0f;
-        if (susY > 1.0f) susY = 1.0f;
-        env.sustain_level = susY;
-        // x-position controls release_ms
-        float sx = (float)(pts[2][0] - x_ - PADDING) / gw;
-        float rx = (float)(pts[3][0] - x_ - PADDING) / gw;
-        if (sx < 0.0f) sx = 0.0f;
-        if (sx >= rx) sx = rx - 0.01f;
-        env.release_ms = (1.0f - sx) * fixedTotal;
-        break;
-      }
-      case 3: { // Release: only changes release_ms
-        float fixedTotal = ADSR_ATTACK_MAX_MS + ADSR_DECAY_MAX_MS + ADSR_RELEASE_MAX_MS;
-        float sx = (float)(pts[2][0] - x_ - PADDING) / gw;
-        float rx = (float)(pts[3][0] - x_ - PADDING) / gw;
-        if (rx <= sx) rx = sx + 0.01f;
-        if (rx > 1.0f) rx = 1.0f;
-        env.release_ms = (1.0f - sx) * fixedTotal;
-        break;
-      }
-    }
+    pointsToEnv(pts, env_);
     return true;
+}
+
+void Graph::onTouchEnded(const TouchEvent&) {
+    selectedPoint_ = -1;
 }
 
 } // namespace ui

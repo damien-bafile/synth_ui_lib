@@ -55,8 +55,9 @@ The build automatically exports compile commands (`compile_commands.json`) for I
 │    Rendering Layer (Framebuffer)    │
 │  Primitives, font, colors, overlays │
 ├─────────────────────────────────────┤
-│  Input Layer (TouchState)           │
-│  Touch calibration, coordinate xform│
+│  Input Layer (TouchEvent + Widget)  │
+│  Touch calibration, capture, gesture│
+│  dispatch, z-order hit-testing      │
 ├─────────────────────────────────────┤
 │  Theme & Colors (50-color palette)  │
 │  RGB565 colors, track palette       │
@@ -77,6 +78,7 @@ The build automatically exports compile commands (`compile_commands.json`) for I
 ```cpp
 #include "ui/framebuffer.h"
 #include "ui/slider.h"
+#include "ui/touch_dispatcher.h"
 #include "ui/colors.h"
 
 // Allocate framebuffer (RGB565, 320×240)
@@ -84,16 +86,20 @@ uint8_t buffer[320 * 240 * 2]; // 2 bytes per pixel (RGB565)
 Framebuffer fb(buffer, 320, 240);
 
 // Create a horizontal slider
-Slider volumeSlider(10, 50, 200, 20, 
+Slider volumeSlider(10, 50, 200, 20, 0.0f, 1.0f, "Volume",
                     colors::ACCENT_1, colors::BG_DARK);
 
 // Draw slider at 75% volume
 float volumeLevel = 0.75f;
-volumeSlider.draw(fb, volumeLevel, false); // (fb, value, is_dragging)
+volumeSlider.draw(fb, volumeLevel);
 
-// Handle touch input
-TouchState touch{.x = 110, .y = 50, .pressed = true};
-volumeSlider.handleTouch(touch);
+// Handle touch input via dispatcher
+TouchDispatcher dispatcher;
+dispatcher.add(&volumeSlider);
+
+TouchState points[] = {{.x = 110, .y = 50, .pressed = true}};
+dispatcher.dispatch(points, 1);
+volumeLevel = volumeSlider.getValue(); // Read updated value
 ```
 
 ### Waveform Display
@@ -133,6 +139,7 @@ meters.draw(fb, levels, peaks, true); // showLabels = true
 
 ```cpp
 #include "ui/xy_pad.h"
+#include "ui/touch_dispatcher.h"
 
 XYPad xyControl(50, 50, 120,           // x, y, size
                 colors::ACCENT_2,      // marker
@@ -144,32 +151,39 @@ float xParam = 0.5f, yParam = 0.5f;
 // Draw with crosshair marker and grid
 xyControl.draw(fb, xParam, yParam, XYPad::CROSSHAIR, true, false);
 
-// Handle touch input
-TouchState touch{.x = 105, .y = 105, .pressed = true};
-if (xyControl.handleTouchInput(touch, &xParam, &yParam)) {
-    // Values updated; re-render next frame
-}
+// Handle touch input via dispatcher
+TouchDispatcher dispatcher;
+dispatcher.add(&xyControl);
+
+TouchState points[] = {{.x = 105, .y = 105, .pressed = true}};
+dispatcher.dispatch(points, 1);
+xParam = xyControl.getX(); // Read updated values
+yParam = xyControl.getY();
 ```
 
 ### ADSR Envelope Editor
 
 ```cpp
 #include "ui/graph.h"
+#include "ui/touch_dispatcher.h"
 
 Graph adsrEditor(10, 10, 200, 120,
                  colors::ACCENT_1, colors::BG_DARK);
 
 // ADSR times in milliseconds
-struct ADSRParams {
-    float attack = 10.0f;
-    float decay = 100.0f;
-    float sustain = 0.7f;
-    float release = 200.0f;
-} adsr;
+AdsrEnvelope env{10.0f, 100.0f, 0.7f, 200.0f};
+adsrEditor.setEnvelope(env);
 
-// Draw and handle touch
-adsrEditor.draw(fb, adsr.attack, adsr.decay, adsr.sustain, adsr.release);
-adsrEditor.handleTouch(touch);
+// Draw envelope
+adsrEditor.draw(fb, env);
+
+// Handle touch input via dispatcher
+TouchDispatcher dispatcher;
+dispatcher.add(&adsrEditor);
+
+TouchState points[] = {{.x = 50, .y = 30, .pressed = true}};
+dispatcher.dispatch(points, 1);
+env = adsrEditor.getEnvelope(); // Read edited envelope
 ```
 
 ### Step Sequencer Grid
@@ -234,6 +248,7 @@ RGB565 customColor = RGB565(31, 63, 31); // Red, Green, Blue (5-6-5 bits)
 
 ```cpp
 #include "ui/touch.h"
+#include "ui/touch_dispatcher.h"
 
 // Raw touch coordinates need calibration
 TouchState rawTouch{.x = 512, .y = 256, .pressed = true};
@@ -246,7 +261,20 @@ calibration.setMatrix(
 );
 
 TouchState calibratedTouch = calibration.transform(rawTouch);
-// Now use calibratedTouch for widget input
+
+// Create dispatcher, register widgets
+TouchDispatcher dispatcher;
+dispatcher.add(&myButton);
+dispatcher.add(&mySlider);
+
+// Dispatch touch events — the dispatcher handles hit-testing,
+// touch capture, and gesture detection (tap, drag, long-press).
+TouchState points[] = { calibratedTouch };
+dispatcher.dispatch(points, 1);
+
+// Query widget state after dispatch
+if (myButton.wasTapped()) { /* button was tapped */ }
+float val = mySlider.getValue(); // slider was dragged
 ```
 
 ## Integration Examples
@@ -281,18 +309,24 @@ void audioCallback(float* audioBuffer, int numSamples) {
 
 ILI9341_t3 tft(10, 8);  // CS, DC pins
 Button recordBtn(100, 50, 60, 40, colors::RECORD, colors::BG_DARK);
+TouchDispatcher dispatcher;
 
 void setup() {
     tft.begin();
+    dispatcher.add(&recordBtn);
 }
 
 void loop() {
     TouchState touch = readCapacitiveTouch();
-    recordBtn.handleTouch(touch);
+    dispatcher.dispatch(&touch, 1);
+    
+    if (recordBtn.wasTapped()) {
+        recordState = !recordState;
+    }
     
     uint16_t* fbBuffer = (uint16_t*)tft.getFrameBuffer();
     Framebuffer fb((uint8_t*)fbBuffer, 320, 240);
-    recordBtn.draw(fb, recordState, false);
+    recordBtn.draw(fb, recordState);
     
     tft.updateScreen();
 }
@@ -313,10 +347,12 @@ synth_ui_lib/
 ├── README.md                   # This file
 ├── library.json                # Package metadata
 └── src/ui/
-    ├── widget.h                # Base IWidget interface
+    ├── widget.h/cpp            # Widget base class (geometry, touch capture, gestures)
+    ├── touch_event.h           # TouchPhase enum, TouchEvent struct
+    ├── touch_dispatcher.h/cpp  # Touch routing, hit-testing, gesture detection
     ├── colors.h                # 50-color palette
     ├── framebuffer.h/cpp       # Rendering primitives
-    ├── touch.h/cpp             # Touch input & calibration
+    ├── touch.h/cpp             # Touch input & calibration (TouchState, TouchCalibration)
     ├── button.h/cpp            # Momentary/latching button
     ├── slider.h/cpp            # Horizontal/vertical slider
     ├── dropdown.h/cpp          # Multi-style dropdown menu

@@ -1,20 +1,20 @@
 #pragma once
 #include <cstdint>
 #include "framebuffer.h"
-#include "touch.h"
+#include "widget.h"
 #include "colors.h"
 #include "icons.h"
 
 namespace ui {
 
 enum class DropdownStyle : uint8_t {
-    CLASSIC,    // Filled bg, border, chevron
-    OUTLINED,   // Border only, dark bg
-    UNDERLINED, // Text + underline + chevron, no box
-    COMPACT,    // Smaller height, tight padding
+    CLASSIC,
+    OUTLINED,
+    UNDERLINED,
+    COMPACT,
 };
 
-class Dropdown {
+class Dropdown : public Widget {
 public:
     static constexpr int DEFAULT_W = 120;
     static constexpr int DEFAULT_H = 20;
@@ -25,15 +25,20 @@ public:
              uint16_t fg = TEXT, uint16_t bg = BG_SURFACE,
              uint16_t accent = ACCENT_2);
 
-    void draw(Framebuffer& fb, int selectedIndex, bool expanded = false);
-    bool handleTouch(const TouchState& touch, int& outIndex, bool expanded = false);
+    void draw(Framebuffer& fb, int selectedIndex, bool expanded);
 
     void addItem(const char* item);
     void addItem(const char* item, SynthIcon icon);
     void clearItems();
     int getItemCount() const noexcept { return itemCount_; }
 
-    void setPosition(int x, int y) noexcept { x_ = x; y_ = y; }
+    bool isExpanded() const noexcept { return expanded_; }
+    void setExpanded(bool e) noexcept { expanded_ = e; }
+
+    int getSelectedIndex() const noexcept { return selectedIndex_; }
+    bool wasSelected() noexcept { bool v = wasSelected_; wasSelected_ = false; return v; }
+
+    void setPosition(int x, int y) noexcept { setBounds(x, y, w_, h_); }
     void setColors(uint16_t fg, uint16_t bg, uint16_t accent) noexcept {
         fg_ = fg; bg_ = bg; accent_ = accent;
     }
@@ -51,26 +56,21 @@ private:
     void drawCompact(Framebuffer& fb, int selectedIndex, bool expanded);
     void drawChevron(Framebuffer& fb, int cx, int cy, bool down, uint16_t color);
     int getItemHeight() const noexcept;
-
-    // Paints the expanded item list only (no closed-box header). Used by
-    // draw() when expanded=true so the list is deferred to the overlay
-    // pass and is not clipped by panels drawn later in the same frame.
-    // Also exposed as a static OverlayPainter-compatible trampoline so the
-    // Framebuffer overlay queue can invoke it without per-instance thunks.
     void paintExpandedListImpl(Framebuffer& fb, int selectedIndex);
     static void paintExpandedListTrampoline(Framebuffer& fb, void* user);
 
-    int x_, y_, w_, h_;
     DropdownStyle style_;
     uint16_t fg_, bg_, accent_;
     const char* items_[MAX_ITEMS];
     SynthIcon icons_[MAX_ITEMS];
     int itemCount_;
-
-    // Cached for the overlay pass; set by draw() each frame. Declared after
-    // itemCount_ to match the constructor initializer order (silences
-    // -Wreorder).
     int lastSelectedIndex_;
+    bool expanded_ = false;
+    int selectedIndex_ = -1;
+    bool wasSelected_ = false;
+
+    bool onTouchBegan(const TouchEvent& event) override;
+    void onTap(const TouchEvent& event) override;
 };
 
 } // namespace ui

@@ -1,52 +1,54 @@
 #include "hbar.h"
-#include "rect.h"
 
 namespace ui {
 
-HorizontalBar::HorizontalBar(int x, int y, int w, int h, uint16_t fg, uint16_t bg)
-    : x_(x), y_(y), w_(w), h_(h), fg_(fg), bg_(bg) {}
-
-bool HorizontalBar::handleTouch(const TouchState& touch, float& outFraction) const {
-    if (!touch.pressed) return false;
-    if (!Rect{x_, y_, w_, h_}.contains(touch.x, touch.y)) return false;
-    outFraction = (float)(touch.x - x_) / (float)w_;
-    if (outFraction < 0.0f) outFraction = 0.0f;
-    if (outFraction > 1.0f) outFraction = 1.0f;
-    return true;
+HorizontalBar::HorizontalBar(int x, int y, int w, int h,
+                             uint16_t fg, uint16_t bg)
+    : fg_(fg), bg_(bg) {
+    setBounds(x, y, w, h);
 }
 
 void HorizontalBar::draw(Framebuffer& fb, float fraction) {
-    int fw = static_cast<int>(w_ * fraction);
-    if (fw < 0) fw = 0;
-    if (fw > w_) fw = w_;
-    if (fw > 0) fb.fillRect(x_, y_, fw, h_, fg_);
-    if (fw < w_) fb.fillRect(x_ + fw, y_, w_ - fw, h_, bg_);
+    if (fraction < 0.0f) fraction = 0.0f;
+    if (fraction > 1.0f) fraction = 1.0f;
+
+    fb.fillRect(x_, y_, w_, h_, bg_);
+    fb.drawRect(x_, y_, w_, h_, fg_);
+
+    int fillW = static_cast<int>(w_ * fraction);
+    if (fillW > 0) {
+        fb.fillRect(x_ + 1, y_ + 1, fillW - 2, h_ - 2, fg_);
+    }
 }
 
 void HorizontalBar::drawCenteredCents(Framebuffer& fb, int x, int y, int w, int h,
-                                      float valCents, float maxCents,
-                                      uint16_t fill, uint16_t bg) {
+                                       float valCents, float maxCents,
+                                       uint16_t fill, uint16_t bg) {
+    if (maxCents <= 0.0f) maxCents = 1.0f;
+    float frac = valCents / maxCents;
+    if (frac < -1.0f) frac = -1.0f;
+    if (frac > 1.0f) frac = 1.0f;
+
     fb.fillRect(x, y, w, h, bg);
+    int center = x + w / 2;
+    int barW = static_cast<int>((w / 2) * frac);
 
-    int half = w / 2;
-    if (half < 1) return;
-    if (maxCents <= 0.0f) return;
-
-    float mag = valCents;
-    if (mag < -maxCents) mag = -maxCents;
-    if (mag >  maxCents) mag =  maxCents;
-
-    if (mag < 0.0f) {
-        int fw = static_cast<int>(((-mag) / maxCents) * half);
-        if (fw > half) fw = half;
-        if (fw > 0) fb.fillRect(x + half - fw, y, fw, h, fill);
-    } else if (mag > 0.0f) {
-        int fw = static_cast<int>((mag / maxCents) * half);
-        if (fw > half) fw = half;
-        if (fw > 0) fb.fillRect(x + half, y, fw, h, fill);
+    if (barW > 0) {
+        fb.fillRect(center, y + 1, barW, h - 2, fill);
+    } else if (barW < 0) {
+        fb.fillRect(center + barW, y + 1, -barW, h - 2, fill);
     }
+}
 
-    fb.fillRect(x + half, y, 1, h, fill);
+bool HorizontalBar::onTouchBegan(const TouchEvent& event) {
+    return contains(event.x, event.y);
+}
+
+void HorizontalBar::onDragMoved(const TouchEvent& event, int /*dx*/, int /*dy*/) {
+    float frac = (float)(event.x - x()) / width();
+    if (frac < 0.0f) frac = 0.0f;
+    if (frac > 1.0f) frac = 1.0f;
+    fraction_ = frac;
 }
 
 } // namespace ui

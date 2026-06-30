@@ -1,14 +1,13 @@
 #include "dropdown.h"
-#include "rect.h"
 #include "font.h"
 
 namespace ui {
 
 Dropdown::Dropdown(int x, int y, int w, int h, DropdownStyle style,
                    uint16_t fg, uint16_t bg, uint16_t accent)
-    : x_(x), y_(y), w_(w), h_(h), style_(style),
-      fg_(fg), bg_(bg), accent_(accent), itemCount_(0),
+    : style_(style), fg_(fg), bg_(bg), accent_(accent), itemCount_(0),
       lastSelectedIndex_(0) {
+    setBounds(x, y, w, h);
     for (int i = 0; i < MAX_ITEMS; i++) {
         items_[i] = nullptr;
         icons_[i] = SynthIcon::NONE;
@@ -173,14 +172,6 @@ void Dropdown::paintExpandedListTrampoline(Framebuffer& fb, void* user) {
 }
 
 void Dropdown::paintExpandedListImpl(Framebuffer& fb, int selectedIndex) {
-    // Replays the "draw only the expanded list" portion of the per-style
-    // drawers. The closed-box header was already drawn by draw() during the
-    // regular pass; we only repaint the floating item list on top of any
-    // panels drawn after draw() returned.
-    //
-    // Item-geometry and per-row rendering matches the pre-overlay
-    // draw*() implementations exactly so the visual output is identical
-    // when no other widget overlaps the list.
     int listY;
     int ih;
 
@@ -198,7 +189,6 @@ void Dropdown::paintExpandedListImpl(Framebuffer& fb, int selectedIndex) {
             break;
         }
         default: {
-            // CLASSIC and OUTLINED: list sits flush under the closed box.
             ih = getItemHeight();
             listY = y_ + h_;
             break;
@@ -272,17 +262,17 @@ void Dropdown::draw(Framebuffer& fb, int selectedIndex, bool expanded) {
     }
 }
 
-bool Dropdown::handleTouch(const TouchState& touch, int& outIndex, bool expanded) {
-    if (!touch.pressed) return false;
-
+bool Dropdown::onTouchBegan(const TouchEvent& event) {
     int ih = getItemHeight();
 
-    if (Rect{x_, y_, w_, h_}.contains(touch.x, touch.y)) {
-        outIndex = -1;
+    // Check header
+    if (contains(event.x, event.y)) {
+        // TODO: distinguish header from item — handled in onTap based on expanded_ state
         return true;
     }
 
-    if (expanded) {
+    // Check expanded items
+    if (expanded_) {
         int iy;
         switch (style_) {
             case DropdownStyle::COMPACT:
@@ -296,8 +286,8 @@ bool Dropdown::handleTouch(const TouchState& touch, int& outIndex, bool expanded
                 break;
         }
         for (int i = 0; i < itemCount_; i++) {
-            if (touch.y >= iy && touch.y < iy + ih && touch.x >= x_ && touch.x < x_ + w_) {
-                outIndex = i;
+            if (event.y >= iy && event.y < iy + ih &&
+                event.x >= x_ && event.x < x_ + w_) {
                 return true;
             }
             iy += ih;
@@ -305,6 +295,42 @@ bool Dropdown::handleTouch(const TouchState& touch, int& outIndex, bool expanded
     }
 
     return false;
+}
+
+void Dropdown::onTap(const TouchEvent& event) {
+    int ih = getItemHeight();
+
+    // Check header tap
+    if (contains(event.x, event.y)) {
+        expanded_ = !expanded_;
+        return;
+    }
+
+    // Check item tap
+    if (expanded_) {
+        int iy;
+        switch (style_) {
+            case DropdownStyle::COMPACT:
+                iy = y_ + h_ - 2;
+                break;
+            case DropdownStyle::UNDERLINED:
+                iy = y_ + h_ + 2;
+                break;
+            default:
+                iy = y_ + h_;
+                break;
+        }
+        for (int i = 0; i < itemCount_; i++) {
+            if (event.y >= iy && event.y < iy + ih &&
+                event.x >= x_ && event.x < x_ + w_) {
+                selectedIndex_ = i;
+                wasSelected_ = true;
+                expanded_ = false;
+                return;
+            }
+            iy += ih;
+        }
+    }
 }
 
 } // namespace ui

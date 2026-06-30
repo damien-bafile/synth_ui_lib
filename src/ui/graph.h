@@ -1,20 +1,19 @@
 #pragma once
 #include <cstdint>
 #include "framebuffer.h"
-#include "touch.h"
+#include "widget.h"
 #include "colors.h"
 
 namespace ui {
 
-// ADSR envelope parameters. Layout must match the synth's ADSR struct.
 struct AdsrEnvelope {
-    float attack_ms;     // 0..2000
-    float decay_ms;      // 0..2000
-    float sustain_level; // 0..1
-    float release_ms;    // 0..4000
+    float attack_ms;
+    float decay_ms;
+    float sustain_level;
+    float release_ms;
 };
 
-class Graph {
+class Graph : public Widget {
 public:
     Graph(int x, int y, int w, int h,
           uint16_t lineColor = ACCENT_1,
@@ -23,12 +22,14 @@ public:
           uint16_t bg = BG_DARK);
 
     void draw(Framebuffer& fb, const AdsrEnvelope& env);
-    bool handleTouch(const TouchState& touch, AdsrEnvelope& env);
+
+    void setEnvelope(const AdsrEnvelope& env) noexcept { env_ = env; }
+    const AdsrEnvelope& getEnvelope() const noexcept { return env_; }
 
     void setLineColors(uint16_t color) noexcept { lineColor_ = color; }
     void setFillColors(uint16_t c1, uint16_t c2) noexcept { fillColor1_ = c1; fillColor2_ = c2; }
-    void setPosition(int x, int y) noexcept { x_ = x; y_ = y; }
-    void setSize(int w, int h) noexcept { w_ = w; h_ = h; }
+    void setPosition(int x, int y) noexcept { setBounds(x, y, w_, h_); }
+    void setSize(int w, int h) noexcept { setBounds(x_, y_, w, h); }
 
     int getX() const noexcept { return x_; }
     int getY() const noexcept { return y_; }
@@ -36,9 +37,13 @@ public:
     int getHeight() const noexcept { return h_; }
 
 private:
-    int x_, y_, w_, h_;
     uint16_t lineColor_, fillColor1_, fillColor2_, bg_;
-    int selectedPoint_; // -1=none, 0=A, 1=D, 2=S, 3=R
+    int selectedPoint_ = -1;
+    AdsrEnvelope env_ = {10.0f, 100.0f, 0.7f, 200.0f};
+
+    bool onTouchBegan(const TouchEvent& event) override;
+    bool onTouchMoved(const TouchEvent& event) override;
+    void onTouchEnded(const TouchEvent& event) override;
 
     void envToPoints(const AdsrEnvelope& env, int pts[4][2]) const;
     void pointsToEnv(const int pts[4][2], AdsrEnvelope& env) const;

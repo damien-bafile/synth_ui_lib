@@ -1,12 +1,13 @@
 #include "button.h"
-#include "rect.h"
 #include "font.h"
 
 namespace ui {
 
 Button::Button(int x, int y, int w, int h, const char* label,
                uint16_t fg, uint16_t bg)
-    : x_(x), y_(y), w_(w), h_(h), label_(label), fg_(fg), bg_(bg) {}
+    : label_(label), fg_(fg), bg_(bg) {
+    setBounds(x, y, w, h);
+}
 
 void Button::draw(Framebuffer& fb, bool pressed) {
     if (pressed) {
@@ -30,8 +31,8 @@ void Button::draw(Framebuffer& fb, bool pressed) {
     }
 }
 
-bool Button::handleTouch(const TouchState& touch) {
-    return touch.pressed && Rect{x_, y_, w_, h_}.contains(touch.x, touch.y);
+void Button::onTap(const TouchEvent&) {
+    wasTapped_ = true;
 }
 
 } // namespace ui

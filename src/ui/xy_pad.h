@@ -1,12 +1,12 @@
 #pragma once
 #include <cstdint>
 #include "framebuffer.h"
+#include "widget.h"
 #include "colors.h"
-#include "touch.h"
 
 namespace ui {
 
-class XYPad {
+class XYPad : public Widget {
 public:
   enum class MarkerStyle : uint8_t { CIRCLE, CROSSHAIR, SQUARE };
 
@@ -17,19 +17,23 @@ public:
   void draw(Framebuffer& fb, float xValue, float yValue, MarkerStyle style = MarkerStyle::CIRCLE,
             bool showGrid = true, bool showLabels = false) const;
 
-  bool handleTouch(const TouchState& touch, float& outX, float& outY);
+  float getX() const noexcept { return xFrac_; }
+  float getY() const noexcept { return yFrac_; }
 
   void setFlipY(bool flip) { flipY_ = flip; }
   bool flipY() const { return flipY_; }
 
 private:
-  int x_, y_, size_;
+  int size_;
   uint16_t fgColor_;
   uint16_t bgColor_;
   uint16_t gridColor_;
-  float lastX_;
-  float lastY_;
+  float xFrac_ = 0.5f;
+  float yFrac_ = 0.5f;
   bool flipY_;
+
+  bool onTouchBegan(const TouchEvent& event) override;
+  void onDragMoved(const TouchEvent& event, int dx, int dy) override;
 
   void drawMarker(Framebuffer& fb, int pixelX, int pixelY,
                   MarkerStyle style) const;

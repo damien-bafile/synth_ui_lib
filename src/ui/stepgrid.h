@@ -1,20 +1,20 @@
 #pragma once
 #include <cstdint>
 #include "framebuffer.h"
-#include "touch.h"
+#include "widget.h"
 #include "colors.h"
 
 namespace ui {
 
 enum class StepGridStyle : uint8_t {
-    SQUARES,    // Filled square on, outline off
-    BARS,       // Vertical bar, height = velocity
-    DOTS,       // Small filled circles
-    STRIPS,     // Horizontal strips per track
-    GLOW,       // Sub-step glow with playhead line
+    SQUARES,
+    BARS,
+    DOTS,
+    STRIPS,
+    GLOW,
 };
 
-class StepGrid {
+class StepGrid : public Widget {
 public:
     static constexpr int MAX_STEPS  = 32;
     static constexpr int MAX_TRACKS = 8;
@@ -31,10 +31,12 @@ public:
               const uint8_t velocities[MAX_TRACKS][MAX_STEPS] = nullptr,
               const char* const notes[MAX_TRACKS][MAX_STEPS] = nullptr);
 
-    bool handleTouch(const TouchState& touch, int& outTrack, int& outStep);
+    int getTouchedTrack() const noexcept { return touchedTrack_; }
+    int getTouchedStep() const noexcept { return touchedStep_; }
+    bool hasTouch() const noexcept { return touchedTrack_ >= 0; }
 
     void setStyle(StepGridStyle style) noexcept { style_ = style; }
-    void setPosition(int x, int y) noexcept { x_ = x; y_ = y; }
+    void setPosition(int x, int y) noexcept { setBounds(x, y, w_, h_); }
     void setColors(const uint16_t trackColors[MAX_TRACKS],
                    uint16_t accent, uint16_t bg) noexcept;
     void setStepCount(int n) noexcept { steps_ = (n <= MAX_STEPS) ? n : MAX_STEPS; }
@@ -76,13 +78,19 @@ private:
     void drawCellNote(Framebuffer& fb, int cx, int cy, int cw, int ch,
                       const char* text, uint16_t fg, uint16_t bg) const;
 
-    int x_, y_, w_, h_;
     int steps_, tracks_;
     int activeTrack_;
     StepGridStyle style_;
     uint16_t trackColors_[MAX_TRACKS];
     uint16_t accent_;
     uint16_t bg_;
+    int touchedTrack_ = -1;
+    int touchedStep_ = -1;
+
+    bool mapTouch(int tx, int ty, int& outTrack, int& outStep) const;
+    bool onTouchBegan(const TouchEvent& event) override;
+    bool onTouchMoved(const TouchEvent& event) override;
+    void onTouchEnded(const TouchEvent& event) override;
 };
 
 } // namespace ui
