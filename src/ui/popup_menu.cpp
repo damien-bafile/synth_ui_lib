@@ -88,10 +88,9 @@ void PopupMenu::onTouchEnded(const TouchEvent& event) {
         if (idx == pressedIdx_) {
             selected_ = idx;
             wasSelected_ = true;
-            dismiss();
         }
     }
-    pressedIdx_ = -1;
+    dismiss();
 }
 
 void PopupMenu::onTouchCancelled(const TouchEvent&) {
