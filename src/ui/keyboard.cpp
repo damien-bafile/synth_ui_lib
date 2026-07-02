@@ -487,12 +487,12 @@ bool Keyboard::onTouchBegan(const TouchEvent& event) {
 void Keyboard::onTouchEnded(const TouchEvent& event) {
     if (!active_) return;
 
-    int row, key;
-    if (hitTestKey(event.x, event.y, row, key) &&
-        row == pressedRow_ && key == pressedKey_) {
-        if (pressedRow_ == -1) {
-            cursorPos_ = pressedKey_;
-        } else {
+    if (pressedRow_ == -1) {
+        cursorPos_ = pressedKey_;
+    } else {
+        int row, key;
+        if (hitTestKey(event.x, event.y, row, key) &&
+            row == pressedRow_ && key == pressedKey_) {
             int layoutRows = 0;
             const RowDef* layout = getLayout(currentLayer_, layoutRows);
             if (pressedRow_ >= 0 && pressedRow_ < layoutRows &&
