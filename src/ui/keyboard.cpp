@@ -338,8 +338,16 @@ void Keyboard::keyRect(const RowDef& row, int rowIndex, int keyIndex,
 }
 
 bool Keyboard::hitTestKey(int px, int py, int& row, int& key) const {
-    if (py >= y_ && py < y_ + HEADER_H)
-        return false;
+    if (py >= y_ && py < y_ + HEADER_H) {
+        int textAreaX = x_ + 4;
+        int textLen = static_cast<int>(std::strlen(text_));
+        int idx = (px - textAreaX) / FONT_STEP;
+        if (idx < 0) idx = 0;
+        if (idx > textLen) idx = textLen;
+        row = -1;
+        key = idx;
+        return true;
+    }
 
     for (int r = 0; r < ROWS; r++) {
         int layoutRows = 0;
@@ -482,15 +490,19 @@ void Keyboard::onTouchEnded(const TouchEvent& event) {
     int row, key;
     if (hitTestKey(event.x, event.y, row, key) &&
         row == pressedRow_ && key == pressedKey_) {
-        int layoutRows = 0;
-        const RowDef* layout = getLayout(currentLayer_, layoutRows);
-        if (pressedRow_ >= 0 && pressedRow_ < layoutRows &&
-            pressedKey_ >= 0 && pressedKey_ < layout[pressedRow_].count) {
-            const KeyDef& kd = layout[pressedRow_].keys[pressedKey_];
-            if (kd.character != 0)
-                onChar(kd.character);
-            else if (kd.action != KeyAction::NONE)
-                onAction(kd.action);
+        if (pressedRow_ == -1) {
+            cursorPos_ = pressedKey_;
+        } else {
+            int layoutRows = 0;
+            const RowDef* layout = getLayout(currentLayer_, layoutRows);
+            if (pressedRow_ >= 0 && pressedRow_ < layoutRows &&
+                pressedKey_ >= 0 && pressedKey_ < layout[pressedRow_].count) {
+                const KeyDef& kd = layout[pressedRow_].keys[pressedKey_];
+                if (kd.character != 0)
+                    onChar(kd.character);
+                else if (kd.action != KeyAction::NONE)
+                    onAction(kd.action);
+            }
         }
     }
 
