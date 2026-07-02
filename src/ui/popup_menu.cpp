@@ -12,6 +12,7 @@ PopupMenu::PopupMenu(int x, int y, const Item* items, int count,
     int w = calcWidth(items, count);
     int h = calcHeight(count);
     setBounds(x, y, w, h);
+    setVisible(false);
 }
 
 int PopupMenu::calcWidth(const Item* items, int count) {
@@ -28,7 +29,7 @@ int PopupMenu::calcHeight(int count) {
 }
 
 void PopupMenu::show() {
-    visible_ = true;
+    setVisible(true);
     selected_ = -1;
     pressedIdx_ = -1;
 }
@@ -39,7 +40,7 @@ void PopupMenu::showAt(int x, int y) {
 }
 
 void PopupMenu::dismiss() {
-    visible_ = false;
+    setVisible(false);
     pressedIdx_ = -1;
 }
 
@@ -58,7 +59,8 @@ int PopupMenu::itemIndexAt(int py) const {
 }
 
 bool PopupMenu::onTouchBegan(const TouchEvent& event) {
-    if (!visible_ || !enabled_) return false;
+    if (!visible()) return false;
+    if (!enabled()) return false;
     if (!contains(event.x, event.y)) {
         dismiss();
         return true;
@@ -68,7 +70,7 @@ bool PopupMenu::onTouchBegan(const TouchEvent& event) {
 }
 
 void PopupMenu::onTouchEnded(const TouchEvent& event) {
-    if (!visible_) return;
+    if (!visible()) return;
 
     if (pressedIdx_ >= 0) {
         int idx = itemIndexAt(event.y);
@@ -92,7 +94,7 @@ void PopupMenu::paintTrampoline(Framebuffer& fb, void* user) {
 }
 
 void PopupMenu::paint(Framebuffer& fb) {
-    if (!visible_) return;
+    if (!visible()) return;
 
     int pad = 2;
     int ix = x_ + pad;
@@ -114,7 +116,7 @@ void PopupMenu::paint(Framebuffer& fb) {
 }
 
 void PopupMenu::draw(Framebuffer& fb, uint32_t) {
-    if (!visible_) return;
+    if (!visible()) return;
     fb.enqueueOverlay(x_, y_, w_, h_,
                       &PopupMenu::paintTrampoline, this,
                       reinterpret_cast<uintptr_t>(this));

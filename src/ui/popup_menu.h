@@ -20,7 +20,7 @@ public:
     void show();
     void showAt(int x, int y);
     void dismiss();
-    bool isVisible() const { return visible_; }
+    bool isVisible() const { return visible(); }
 
     int getSelectedIndex() const { return selected_; }
     bool wasSelected() const;
@@ -43,7 +43,6 @@ private:
     const Item* items_;
     int itemCount_;
     int itemH_ = 24;
-    bool visible_ = false;
     int selected_ = -1;
     mutable bool wasSelected_ = false;
     int pressedIdx_ = -1;
