@@ -423,19 +423,6 @@ void Keyboard::paintKeyboard(Framebuffer& fb) {
                               kd.action != KeyAction::SPACE &&
                               kd.character == 0);
 
-            uint16_t bg = surfaceBg_;
-            uint16_t fg = keyFg_;
-
-            if (pressed) {
-                bg = activeKeyBg_;
-                fg = surfaceBg_;
-            }
-
-            if (kd.action == KeyAction::SHIFT && currentLayer_ == Layer::UPPER) {
-                bg = activeKeyBg_;
-                fg = surfaceBg_;
-            }
-
             uint16_t borderColor;
             if (kd.action == KeyAction::BACKSPACE)
                 borderColor = ACCENT_1;
@@ -443,6 +430,14 @@ void Keyboard::paintKeyboard(Framebuffer& fb) {
                 borderColor = ACCENT_3;
             else
                 borderColor = LAVENDER;
+
+            uint16_t bg = surfaceBg_;
+            uint16_t fg = keyFg_;
+
+            if (pressed || (kd.action == KeyAction::SHIFT && currentLayer_ == Layer::UPPER)) {
+                bg = borderColor;
+                fg = surfaceBg_;
+            }
 
             fb.fillRect(kx + 1, ky + 1, kw - 2, keyH - 2, bg);
             fb.drawRect(kx + 1, ky + 1, kw - 2, keyH - 2, borderColor);
