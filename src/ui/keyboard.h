@@ -105,6 +105,7 @@ private:
     void onAction(KeyAction action);
     void insertChar(char c);
 
+public:
     bool hasSelection() const { return selStart_ >= 0 && selStart_ != selEnd_; }
     int selBegin() const {
         return (selStart_ < selEnd_) ? selStart_ : selEnd_;
