@@ -80,15 +80,11 @@ bool PopupMenu::onTouchBegan(const TouchEvent& event) {
     return true;
 }
 
-void PopupMenu::onTouchEnded(const TouchEvent& event) {
+void PopupMenu::onTouchEnded(const TouchEvent&) {
     if (!visible()) return;
-
     if (pressedIdx_ >= 0) {
-        int idx = itemIndexAt(event.y);
-        if (idx == pressedIdx_) {
-            selected_ = idx;
-            wasSelected_ = true;
-        }
+        selected_ = pressedIdx_;
+        wasSelected_ = true;
     }
     dismiss();
 }
