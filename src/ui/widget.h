@@ -44,6 +44,7 @@ public:
 
     // Gesture callbacks (override these)
     virtual void onTap(const TouchEvent& event);
+    virtual void onDoubleTap(const TouchEvent& event);
     virtual void onLongPress(const TouchEvent& event);
     virtual void onDragBegan(const TouchEvent& event);
     virtual void onDragMoved(const TouchEvent& event, int dx, int dy);

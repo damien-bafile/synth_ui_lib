@@ -48,6 +48,7 @@ set(UI_SOURCES
     src/ui/radial_dial.cpp
     src/ui/layout.cpp
     src/ui/page_layout.cpp
+    src/ui/popup_menu.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${UI_SOURCES})

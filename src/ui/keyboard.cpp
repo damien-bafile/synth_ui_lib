@@ -257,6 +257,12 @@ void Keyboard::insertChar(char c) {
     if (cursorPos_ > len) cursorPos_ = len;
     if (len >= MAX_TEXT - 1) return;
 
+    if (hasSelection()) {
+        deleteSelection();
+        len = static_cast<int>(std::strlen(text_));
+        cursorPos_ = (cursorPos_ < 0) ? 0 : (cursorPos_ > len) ? len : cursorPos_;
+    }
+
     for (int i = len; i > cursorPos_; i--) {
         text_[i] = text_[i - 1];
     }
@@ -267,11 +273,60 @@ void Keyboard::insertChar(char c) {
 
 void Keyboard::onChar(char c) {
     insertChar(c);
+    clearSelection();
+}
+
+void Keyboard::deleteSelection() {
+    if (!hasSelection()) return;
+    int b = selBegin();
+    int e = selEnd();
+    int len = static_cast<int>(std::strlen(text_));
+    int delta = e - b;
+    for (int i = e; i <= len; i++)
+        text_[i - delta] = text_[i];
+    cursorPos_ = b;
+    clearSelection();
+}
+
+void Keyboard::insertText(const char* s) {
+    if (hasSelection()) deleteSelection();
+    int len = static_cast<int>(std::strlen(text_));
+    int slen = static_cast<int>(std::strlen(s));
+    int room = MAX_TEXT - 1 - len;
+    if (slen > room) slen = room;
+    if (slen <= 0) return;
+    for (int i = len; i >= cursorPos_; i--)
+        text_[i + slen] = text_[i];
+    for (int i = 0; i < slen; i++)
+        text_[cursorPos_ + i] = s[i];
+    cursorPos_ += slen;
+}
+
+void Keyboard::selectWordAt(int pos) {
+    int len = static_cast<int>(std::strlen(text_));
+    if (len == 0) return;
+    if (pos < 0) pos = 0;
+    if (pos > len) pos = len;
+
+    int start = pos;
+    while (start > 0 && text_[start - 1] != ' ')
+        start--;
+    int end = pos;
+    while (end < len && text_[end] != ' ')
+        end++;
+
+    selStart_ = start;
+    selEnd_ = end;
+    cursorPos_ = end;
 }
 
 void Keyboard::onAction(KeyAction action) {
     switch (action) {
         case KeyAction::BACKSPACE: {
+            if (hasSelection()) {
+                deleteSelection();
+                break;
+            }
             int len = static_cast<int>(std::strlen(text_));
             if (cursorPos_ > 0 && len > 0) {
                 for (int i = cursorPos_ - 1; i < len; i++) {
@@ -395,9 +450,19 @@ void Keyboard::paintKeyboard(Framebuffer& fb) {
     int tx = textAreaX;
     int ty = y_ + (HEADER_H - FONT_H) / 2;
 
-    for (int i = 0; i < drawLen; i++)
-        fb.drawChar(tx + i * FONT_STEP, ty,
-                    text_[scrollOffset + i], keyFg_, surfaceBg_);
+    int selB = hasSelection() ? selBegin() : -1;
+    int selE = hasSelection() ? selEnd() : -1;
+
+    for (int i = 0; i < drawLen; i++) {
+        int absIdx = scrollOffset + i;
+        bool isSel = (selB >= 0 && absIdx >= selB && absIdx < selE);
+        uint16_t chBg = isSel ? activeKeyBg_ : surfaceBg_;
+        uint16_t chFg = isSel ? surfaceBg_ : keyFg_;
+
+        if (isSel)
+            fb.fillRect(tx + i * FONT_STEP, ty, FONT_STEP, FONT_H, chBg);
+        fb.drawChar(tx + i * FONT_STEP, ty, text_[absIdx], chFg, chBg);
+    }
 
     if ((sDrawCount / 30) % 2 == 0 && cursorPos_ >= scrollOffset &&
         cursorPos_ <= scrollOffset + drawLen && cursorPos_ <= textLen)
@@ -487,9 +552,7 @@ bool Keyboard::onTouchBegan(const TouchEvent& event) {
 void Keyboard::onTouchEnded(const TouchEvent& event) {
     if (!active_) return;
 
-    if (pressedRow_ == -1) {
-        cursorPos_ = pressedKey_;
-    } else {
+    if (pressedRow_ >= 0) {
         int row, key;
         if (hitTestKey(event.x, event.y, row, key) &&
             row == pressedRow_ && key == pressedKey_) {
@@ -507,6 +570,30 @@ void Keyboard::onTouchEnded(const TouchEvent& event) {
     }
 
     pressedRow_ = pressedKey_ = -1;
+}
+
+void Keyboard::onTap(const TouchEvent& event) {
+    if (!active_) return;
+
+    int row, key;
+    if (!hitTestKey(event.x, event.y, row, key)) return;
+    if (row != -1) return;
+
+    int charIdx = key;
+    cursorPos_ = charIdx;
+    clearSelection();
+    lastTapTime_ = event.timestamp;
+    lastTapChar_ = charIdx;
+}
+
+void Keyboard::onDoubleTap(const TouchEvent& event) {
+    if (!active_) return;
+
+    int row, key;
+    if (!hitTestKey(event.x, event.y, row, key)) return;
+    if (row != -1) return;
+
+    selectWordAt(key);
 }
 
 void Keyboard::onTouchCancelled(const TouchEvent&) {

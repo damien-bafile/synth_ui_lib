@@ -39,6 +39,7 @@ void Widget::onTouchEnded(const TouchEvent&) {}
 void Widget::onTouchCancelled(const TouchEvent&) {}
 
 void Widget::onTap(const TouchEvent&) {}
+void Widget::onDoubleTap(const TouchEvent&) {}
 void Widget::onLongPress(const TouchEvent&) {}
 void Widget::onDragBegan(const TouchEvent&) {}
 void Widget::onDragMoved(const TouchEvent&, int, int) {}

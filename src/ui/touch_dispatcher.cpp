@@ -187,7 +187,19 @@ void TouchDispatcher::deliverEnded(const TouchEvent& event, TouchTrack& track) {
         int totalDy = event.y - track.startY;
         if (std::abs(totalDx) <= kTapMaxMovement &&
             std::abs(totalDy) <= kTapMaxMovement) {
+            uint8_t id = event.fingerId;
+            uint32_t dt = event.timestamp - lastTapTime_[id];
+            int dx = event.x - lastTapX_[id];
+            int dy = event.y - lastTapY_[id];
+            bool isDoubleTap = (dt > 0 && dt <= kDoubleTapMs &&
+                                std::abs(dx) <= kDoubleTapMaxDist &&
+                                std::abs(dy) <= kDoubleTapMaxDist);
             track.captured->onTap(event);
+            if (isDoubleTap)
+                track.captured->onDoubleTap(event);
+            lastTapX_[id] = event.x;
+            lastTapY_[id] = event.y;
+            lastTapTime_[id] = event.timestamp;
         }
     } else {
         track.captured->onDragEnded(event);

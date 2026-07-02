@@ -59,6 +59,8 @@ public:
     bool onTouchBegan(const TouchEvent&) override;
     void onTouchEnded(const TouchEvent&) override;
     void onTouchCancelled(const TouchEvent&) override;
+    void onTap(const TouchEvent&) override;
+    void onDoubleTap(const TouchEvent&) override;
 
     Layer currentLayer() const { return currentLayer_; }
     void setCurrentLayer(Layer l) { currentLayer_ = l; }
@@ -103,6 +105,19 @@ private:
     void onAction(KeyAction action);
     void insertChar(char c);
 
+    bool hasSelection() const { return selStart_ >= 0 && selStart_ != selEnd_; }
+    int selBegin() const {
+        return (selStart_ < selEnd_) ? selStart_ : selEnd_;
+    }
+    int selEnd() const {
+        return (selStart_ < selEnd_) ? selEnd_ : selStart_;
+    }
+    int selectionLength() const { return hasSelection() ? selEnd() - selBegin() : 0; }
+    void selectWordAt(int pos);
+    void clearSelection() { selStart_ = selEnd_ = -1; }
+    void deleteSelection();
+    void insertText(const char* s);
+
     char text_[MAX_TEXT];
     int cursorPos_ = 0;
     bool active_ = false;
@@ -111,6 +126,11 @@ private:
 
     int pressedRow_ = -1;
     int pressedKey_ = -1;
+
+    int selStart_ = -1;
+    int selEnd_ = -1;
+    int lastTapChar_ = -1;
+    uint32_t lastTapTime_ = 0;
 
     uint16_t keyFg_, activeKeyBg_, surfaceBg_;
 };

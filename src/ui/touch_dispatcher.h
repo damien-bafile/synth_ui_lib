@@ -14,6 +14,8 @@ public:
     static constexpr int kDragThreshold = 4;
     static constexpr uint32_t kLongPressMs = 800;
     static constexpr int kTapMaxMovement = 8;
+    static constexpr uint32_t kDoubleTapMs = 300;
+    static constexpr int kDoubleTapMaxDist = 12;
 
     TouchDispatcher();
 
@@ -46,6 +48,9 @@ private:
     int prevX_[MAX_TOUCH_POINTS] = {};
     int prevY_[MAX_TOUCH_POINTS] = {};
     TouchTrack tracks_[MAX_TOUCH_POINTS];
+    int lastTapX_[MAX_TOUCH_POINTS] = {};
+    int lastTapY_[MAX_TOUCH_POINTS] = {};
+    uint32_t lastTapTime_[MAX_TOUCH_POINTS] = {};
 
     int findWidget(const Widget* widget) const;
     void sortByZOrder();

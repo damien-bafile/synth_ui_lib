@@ -28,3 +28,4 @@
 #include "rect.h"
 #include "layout.h"
 #include "page_layout.h"
+#include "popup_menu.h"
