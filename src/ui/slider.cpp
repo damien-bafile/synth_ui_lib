@@ -68,25 +68,30 @@ void Slider::draw(Framebuffer& fb, float value) {
     }
 }
 
-bool Slider::onTouchBegan(const TouchEvent& event) {
-    return contains(event.x, event.y);
-}
-
-void Slider::onDragMoved(const TouchEvent& event, int /*dx*/, int /*dy*/) {
+void Slider::updateFromTouch(int px, int py) {
     float range = max_ - min_;
     if (range <= 0.0f) return;
 
+    float frac;
     if (vertical_) {
-        float frac = 1.0f - (float)(event.y - y()) / height();
-        if (frac < 0.0f) frac = 0.0f;
-        if (frac > 1.0f) frac = 1.0f;
-        value_ = min_ + frac * range;
+        frac = 1.0f - (float)(py - y()) / height();
     } else {
-        float frac = (float)(event.x - x()) / width();
-        if (frac < 0.0f) frac = 0.0f;
-        if (frac > 1.0f) frac = 1.0f;
-        value_ = min_ + frac * range;
+        frac = (float)(px - x()) / width();
     }
+    if (frac < 0.0f) frac = 0.0f;
+    if (frac > 1.0f) frac = 1.0f;
+    value_ = min_ + frac * range;
+    changed_ = true;
+}
+
+bool Slider::onTouchBegan(const TouchEvent& event) {
+    if (!contains(event.x, event.y)) return false;
+    updateFromTouch(event.x, event.y);  // jump to touch position
+    return true;
+}
+
+void Slider::onDragMoved(const TouchEvent& event, int /*dx*/, int /*dy*/) {
+    updateFromTouch(event.x, event.y);
 }
 
 } // namespace ui

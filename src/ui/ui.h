@@ -17,6 +17,7 @@
 #include "panel.h"
 #include "hbar.h"
 #include "textfield.h"
+#include "keyboard.h"
 #include "graph.h"
 #include "dropdown.h"
 #include "stepgrid.h"

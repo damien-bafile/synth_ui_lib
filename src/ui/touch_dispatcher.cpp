@@ -38,10 +38,10 @@ void TouchDispatcher::remove(const Widget* widget) {
 }
 
 void TouchDispatcher::clear() {
-    for (auto& track : tracks_) {
-        track.active = false;
-        track.captured = nullptr;
-    }
+    // Only drop the widget list. In-flight touch tracks are kept so
+    // immediate-mode callers (clear + re-add every frame) still deliver
+    // Moved/Ended/onTap to the widget captured on Began. Captured widgets
+    // must outlive the touch (e.g. static storage).
     widgetCount_ = 0;
 }
 

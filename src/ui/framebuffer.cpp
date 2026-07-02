@@ -208,7 +208,7 @@ int Framebuffer::textWidth(const char* text) {
 
 void Framebuffer::drawSynthIcon(int x, int y, SynthIcon icon, uint16_t fg, uint16_t bg) {
     int idx = static_cast<int>(icon);
-    if (idx >= 20) return;
+    if (idx >= 21) return;
     for (int col = 0; col < 5; col++) {
         unsigned char bits = synth_glyphs[idx * 5 + col];
         for (int row = 0; row < 7; row++) {

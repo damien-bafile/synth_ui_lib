@@ -17,6 +17,9 @@ public:
 
     float getValue() const noexcept { return value_; }
 
+    // Returns true once after the user touched/dragged the slider, then clears
+    bool wasChanged() noexcept { bool v = changed_; changed_ = false; return v; }
+
     void setLabel(const char* label) noexcept { label_ = label; }
     void setPosition(int x, int y) noexcept { setBounds(x, y, w_, h_); }
     void setColors(uint16_t fg, uint16_t bg) noexcept { fg_ = fg; bg_ = bg; }
@@ -35,6 +38,9 @@ private:
     const char* label_;
     uint16_t fg_, bg_;
     bool vertical_;
+    bool changed_ = false;
+
+    void updateFromTouch(int px, int py);
 
     bool onTouchBegan(const TouchEvent& event) override;
     void onDragMoved(const TouchEvent& event, int dx, int dy) override;

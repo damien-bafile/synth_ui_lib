@@ -8,7 +8,6 @@ static constexpr float ADSR_ATTACK_MAX_MS  = 2000.0f;
 static constexpr float ADSR_DECAY_MAX_MS   = 2000.0f;
 static constexpr float ADSR_RELEASE_MAX_MS = 4000.0f;
 static constexpr int   POINT_RADIUS = 3;
-static constexpr int   TOUCH_RADIUS = 8;
 static constexpr int   LABEL_H      = 10;
 static constexpr int   PADDING      = 4;
 
@@ -35,63 +34,32 @@ Graph::Graph(int x, int y, int w, int h,
     setBounds(x, y, w, h);
 }
 
+// Fixed per-segment bands so the pixel<->ms mapping is identical in both
+// directions: A, D, R each get 30% of the width (scaled by their max ms),
+// with a fixed 10% sustain-hold segment between D and R. A dragged point
+// therefore stays under the finger instead of re-normalizing away.
 void Graph::envToPoints(const AdsrEnvelope& env, int pts[4][2]) const {
     int gw = w_ - PADDING * 2;
     int gh = h_ - PADDING * 2 - LABEL_H;
+    int x0 = x_ + PADDING;
+    int y0 = y_ + PADDING;
 
-    float totalTime = env.attack_ms + env.decay_ms + env.release_ms;
-    if (totalTime < 1.0f) totalTime = 1.0f;
+    int aBand = (int)(gw * 0.30f);
+    int dBand = aBand;
+    int rBand = aBand;
+    int holdW = gw - aBand - dBand - rBand;  // sustain hold, ~10%
 
-    float fixedTotal = ADSR_ATTACK_MAX_MS + ADSR_DECAY_MAX_MS + ADSR_RELEASE_MAX_MS;
+    pts[0][0] = x0 + (int)(aBand * env.attack_ms / ADSR_ATTACK_MAX_MS);
+    pts[0][1] = y0;
 
-    pts[0][0] = x_ + PADDING + (int)(gw * env.attack_ms / totalTime);
-    pts[0][1] = y_ + PADDING;
+    pts[1][0] = pts[0][0] + (int)(dBand * env.decay_ms / ADSR_DECAY_MAX_MS);
+    pts[1][1] = y0 + (int)(gh * (1.0f - env.sustain_level));
 
-    pts[1][0] = x_ + PADDING + (int)(gw * (env.attack_ms + env.decay_ms) / totalTime);
-    pts[1][1] = y_ + PADDING + (int)(gh * (1.0f - env.sustain_level));
-
-    pts[2][0] = x_ + PADDING + gw - (int)(gw * env.release_ms / fixedTotal);
-    if (pts[2][0] <= pts[1][0] + 2) pts[2][0] = pts[1][0] + 3;
-    if (pts[2][0] > x_ + PADDING + gw - 2) pts[2][0] = x_ + PADDING + gw - 2;
+    pts[2][0] = pts[1][0] + holdW;
     pts[2][1] = pts[1][1];
 
-    pts[3][0] = x_ + PADDING + gw;
-    pts[3][1] = y_ + PADDING + gh;
-}
-
-void Graph::pointsToEnv(const int pts[4][2], AdsrEnvelope& env) const {
-    int gw = w_ - PADDING * 2;
-    int gh = h_ - PADDING * 2 - LABEL_H;
-    if (gw < 1) gw = 1;
-    if (gh < 1) gh = 1;
-
-    float ax = (float)(pts[0][0] - x_ - PADDING) / gw;
-    float dx = (float)(pts[1][0] - x_ - PADDING) / gw;
-    float sx = (float)(pts[2][0] - x_ - PADDING) / gw;
-    float rx = (float)(pts[3][0] - x_ - PADDING) / gw;
-
-    if (ax < 0.0f) ax = 0.0f;
-    if (dx <= ax) dx = ax + 0.01f;
-    if (sx <= dx) sx = dx + 0.01f;
-    if (rx <= sx) rx = sx + 0.01f;
-    if (rx > 1.0f) rx = 1.0f;
-
-    float susY = 1.0f - (float)(pts[1][1] - y_ - PADDING) / gh;
-    if (susY < 0.0f) susY = 0.0f;
-    if (susY > 1.0f) susY = 1.0f;
-
-    float totalMs = ADSR_ATTACK_MAX_MS + ADSR_DECAY_MAX_MS + ADSR_RELEASE_MAX_MS;
-    env.attack_ms     = ax * totalMs;
-    env.decay_ms      = (dx - ax) * totalMs;
-    env.sustain_level = susY;
-    env.release_ms    = (rx - sx) * totalMs;
-
-    if (env.attack_ms < 0.0f) env.attack_ms = 0.0f;
-    if (env.attack_ms > ADSR_ATTACK_MAX_MS) env.attack_ms = ADSR_ATTACK_MAX_MS;
-    if (env.decay_ms < 0.0f) env.decay_ms = 0.0f;
-    if (env.decay_ms > ADSR_DECAY_MAX_MS) env.decay_ms = ADSR_DECAY_MAX_MS;
-    if (env.release_ms < 0.0f) env.release_ms = 0.0f;
-    if (env.release_ms > ADSR_RELEASE_MAX_MS) env.release_ms = ADSR_RELEASE_MAX_MS;
+    pts[3][0] = pts[2][0] + (int)(rBand * env.release_ms / ADSR_RELEASE_MAX_MS);
+    pts[3][1] = y0 + gh;
 }
 
 void Graph::draw(Framebuffer& fb, const AdsrEnvelope& env) {
@@ -186,60 +154,65 @@ void Graph::draw(Framebuffer& fb, const AdsrEnvelope& env) {
 }
 
 bool Graph::onTouchBegan(const TouchEvent& event) {
+    // Finger-friendly: any touch inside the graph grabs the nearest point.
+    if (!contains(event.x, event.y)) return false;
+
     int pts[4][2];
     envToPoints(env_, pts);
 
+    long bestD = -1;
     for (int i = 0; i < 4; i++) {
-        int dx = event.x - pts[i][0];
-        int dy = event.y - pts[i][1];
-        if (dx * dx + dy * dy <= TOUCH_RADIUS * TOUCH_RADIUS) {
+        long dx = event.x - pts[i][0];
+        long dy = event.y - pts[i][1];
+        long d = dx * dx + dy * dy;
+        if (bestD < 0 || d < bestD) {
+            bestD = d;
             selectedPoint_ = i;
-            return true;
         }
     }
-    return false;
+    return true;
 }
 
 bool Graph::onTouchMoved(const TouchEvent& event) {
     if (selectedPoint_ < 0) return true;
 
+    int gw = w_ - PADDING * 2;
+    int gh = h_ - PADDING * 2 - LABEL_H;
+    if (gh < 1) gh = 1;
+    int x0 = x_ + PADDING;
+    int y0 = y_ + PADDING;
+
+    int aBand = (int)(gw * 0.30f);
+    if (aBand < 1) aBand = 1;
+    int holdW = gw - aBand * 3;
+
     int pts[4][2];
     envToPoints(env_, pts);
 
-    int minX = x_ + PADDING;
-    int maxX = x_ + w_ - PADDING;
-    int minY = y_ + PADDING;
-    int maxY = y_ + PADDING + (h_ - PADDING * 2 - LABEL_H);
+    // Each point maps its touch position back through the same fixed band
+    // used to draw it, so the handle tracks the finger exactly.
+    auto clamp01 = [](float v) {
+        return v < 0.0f ? 0.0f : (v > 1.0f ? 1.0f : v);
+    };
 
-    int newX = event.x;
-    int newY = event.y;
-    if (newX < minX) newX = minX;
-    if (newX > maxX) newX = maxX;
-    if (newY < minY) newY = minY;
-    if (newY > maxY) newY = maxY;
-
-    if (selectedPoint_ == 0) {
-        if (newX >= pts[1][0] - 2) newX = pts[1][0] - 3;
-    } else if (selectedPoint_ == 1) {
-        if (newX <= pts[0][0] + 2) newX = pts[0][0] + 3;
-        if (newX >= pts[2][0] - 2) newX = pts[2][0] - 3;
-    } else if (selectedPoint_ == 2) {
-        if (newX <= pts[1][0] + 2) newX = pts[1][0] + 3;
-        if (newX >= pts[3][0] - 2) newX = pts[3][0] - 3;
-    } else if (selectedPoint_ == 3) {
-        if (newX <= pts[2][0] + 2) newX = pts[2][0] + 3;
+    switch (selectedPoint_) {
+    case 0:  // attack time (x)
+        env_.attack_ms = clamp01((float)(event.x - x0) / aBand) * ADSR_ATTACK_MAX_MS;
+        break;
+    case 1:  // decay time (x) + sustain level (y)
+        env_.decay_ms = clamp01((float)(event.x - pts[0][0]) / aBand) * ADSR_DECAY_MAX_MS;
+        env_.sustain_level = clamp01(1.0f - (float)(event.y - y0) / gh);
+        break;
+    case 2:  // sustain level (y); x slides the plateau = adjusts decay time
+        env_.sustain_level = clamp01(1.0f - (float)(event.y - y0) / gh);
+        env_.decay_ms = clamp01((float)(event.x - holdW - pts[0][0]) / aBand) *
+                        ADSR_DECAY_MAX_MS;
+        break;
+    case 3:  // release time (x)
+        env_.release_ms = clamp01((float)(event.x - (pts[1][0] + holdW)) / aBand) *
+                          ADSR_RELEASE_MAX_MS;
+        break;
     }
-
-    pts[selectedPoint_][0] = newX;
-    pts[selectedPoint_][1] = newY;
-
-    if (selectedPoint_ == 1) {
-        pts[2][1] = pts[1][1];
-    } else if (selectedPoint_ == 2) {
-        pts[1][1] = pts[2][1];
-    }
-
-    pointsToEnv(pts, env_);
     return true;
 }
 

@@ -46,7 +46,6 @@ private:
     void onTouchEnded(const TouchEvent& event) override;
 
     void envToPoints(const AdsrEnvelope& env, int pts[4][2]) const;
-    void pointsToEnv(const int pts[4][2], AdsrEnvelope& env) const;
 };
 
 } // namespace ui
