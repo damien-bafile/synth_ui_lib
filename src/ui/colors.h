@@ -23,10 +23,10 @@ constexpr uint16_t YELLOW     = RGB565(255, 255, 0);
 constexpr uint16_t CYAN       = RGB565(0,   255, 255);
 constexpr uint16_t MAGENTA    = RGB565(255, 0,   255);
 
-// Shades
-constexpr uint16_t GRAY_DARK   = RGB565(40,  40,  40);
-constexpr uint16_t GRAY_MID    = RGB565(100, 100, 100);
-constexpr uint16_t GRAY_LIGHT  = RGB565(180, 180, 180);
+// Catppuccin Mocha surface/overlay/subtext (replaces neutral grays)
+constexpr uint16_t GRAY_DARK   = RGB565(69,  71,  90);   // surface1
+constexpr uint16_t GRAY_MID    = RGB565(108, 112, 134);  // overlay0
+constexpr uint16_t GRAY_LIGHT  = RGB565(166, 173, 200);  // subtext0
 constexpr uint16_t ORANGE      = RGB565(255, 140, 0);
 constexpr uint16_t PURPLE      = RGB565(140, 0,   255);
 constexpr uint16_t TEAL        = RGB565(0,   180, 180);
@@ -40,6 +40,7 @@ constexpr uint16_t GOLD        = RGB565(255, 200, 40);
 constexpr uint16_t CORAL       = RGB565(255, 80,  80);
 
 // UI Theme (Catppuccin Mocha)
+constexpr uint16_t LAVENDER    = RGB565(180, 190, 254);  // lavender
 constexpr uint16_t BG_DARK     = RGB565(17,  17,  27);   // crust
 constexpr uint16_t BG_MID      = RGB565(24,  24,  37);   // mantle
 constexpr uint16_t BG_SURFACE  = RGB565(30,  30,  46);   // base

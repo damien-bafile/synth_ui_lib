@@ -214,11 +214,11 @@ const Keyboard::RowDef* Keyboard::getLayout(Layer layer, int& outRows) {
 // ── Constructor ─────────────────────────────────────────────────────────────
 
 Keyboard::Keyboard(int x, int y, int w, int h,
-                   uint16_t keyBg, uint16_t keyFg,
-                   uint16_t specialKeyBg, uint16_t activeKeyBg,
+                   uint16_t keyFg,
+                   uint16_t activeKeyBg,
                    uint16_t surfaceBg)
-    : keyBg_(keyBg), keyFg_(keyFg),
-      specialKeyBg_(specialKeyBg), activeKeyBg_(activeKeyBg),
+    : keyFg_(keyFg),
+      activeKeyBg_(activeKeyBg),
       surfaceBg_(surfaceBg) {
     setBounds(x, y, w, h);
     clear();
@@ -338,14 +338,8 @@ void Keyboard::keyRect(const RowDef& row, int rowIndex, int keyIndex,
 }
 
 bool Keyboard::hitTestKey(int px, int py, int& row, int& key) const {
-    if (py >= y_ && py < y_ + HEADER_H) {
-        if (px >= x_ && px < x_ + DONE_W) {
-            row = -1;
-            key = -1;
-            return true;
-        }
+    if (py >= y_ && py < y_ + HEADER_H)
         return false;
-    }
 
     for (int r = 0; r < ROWS; r++) {
         int layoutRows = 0;
@@ -376,21 +370,9 @@ void Keyboard::paintKeyboard(Framebuffer& fb) {
     fb.fillRect(x_, y_, w_, h_, surfaceBg_);
     fb.drawRect(x_, y_, w_, h_, GRAY_MID);
 
-    // ── Header: Done button ──────────────────────────────────────────────
-    bool donePressed = (pressedRow_ == -1 && pressedKey_ == -1);
-    uint16_t doneBg = donePressed ? activeKeyBg_ : keyBg_;
-    fb.fillRect(x_ + 2, y_ + 2, DONE_W - 4, HEADER_H - 4, doneBg);
-    fb.drawRect(x_ + 2, y_ + 2, DONE_W - 4, HEADER_H - 4, GRAY_LIGHT);
-    int doneTx = x_ + (DONE_W - Framebuffer::textWidth("Done")) / 2;
-    int doneTy = y_ + (HEADER_H - FONT_H) / 2;
-    fb.drawText(doneTx, doneTy, "Done", keyFg_, doneBg);
-
-    int sepX = x_ + DONE_W;
-    fb.drawLine(sepX, y_, sepX, y_ + HEADER_H, GRAY_MID);
-
     // ── Header: text preview ─────────────────────────────────────────────
-    int textAreaX = sepX + 4;
-    int textAreaW = w_ - DONE_W - 6;
+    int textAreaX = x_ + 4;
+    int textAreaW = w_ - 8;
     int maxVisible = textAreaW / FONT_STEP;
     if (maxVisible < 1) maxVisible = 1;
 
@@ -441,15 +423,12 @@ void Keyboard::paintKeyboard(Framebuffer& fb) {
                               kd.action != KeyAction::SPACE &&
                               kd.character == 0);
 
-            uint16_t bg = keyBg_;
+            uint16_t bg = surfaceBg_;
             uint16_t fg = keyFg_;
 
             if (pressed) {
                 bg = activeKeyBg_;
                 fg = surfaceBg_;
-            } else if (isSpecial) {
-                bg = specialKeyBg_;
-                fg = keyFg_;
             }
 
             if (kd.action == KeyAction::SHIFT && currentLayer_ == Layer::UPPER) {
@@ -457,8 +436,16 @@ void Keyboard::paintKeyboard(Framebuffer& fb) {
                 fg = surfaceBg_;
             }
 
+            uint16_t borderColor;
+            if (kd.action == KeyAction::BACKSPACE)
+                borderColor = ACCENT_1;
+            else if (isSpecial)
+                borderColor = ACCENT_3;
+            else
+                borderColor = LAVENDER;
+
             fb.fillRect(kx + 1, ky + 1, kw - 2, keyH - 2, bg);
-            fb.drawRect(kx + 1, ky + 1, kw - 2, keyH - 2, GRAY_DARK);
+            fb.drawRect(kx + 1, ky + 1, kw - 2, keyH - 2, borderColor);
 
             int labelW = Framebuffer::textWidth(kd.label);
             int lx = kx + (kw - labelW) / 2;
@@ -496,12 +483,6 @@ bool Keyboard::onTouchBegan(const TouchEvent& event) {
 
 void Keyboard::onTouchEnded(const TouchEvent& event) {
     if (!active_) return;
-
-    if (pressedRow_ == -1 && pressedKey_ == -1) {
-        dismiss();
-        pressedRow_ = pressedKey_ = -1;
-        return;
-    }
 
     int row, key;
     if (hitTestKey(event.x, event.y, row, key) &&

@@ -141,7 +141,7 @@ void Graph::draw(Framebuffer& fb, const AdsrEnvelope& env) {
     for (int i = 0; i < 4; i++) {
         uint16_t c = (i == selectedPoint_) ? HIGHLIGHT : lineColor_;
         fb.fillCircle(pts[i][0], pts[i][1], POINT_RADIUS, c);
-        fb.drawCircle(pts[i][0], pts[i][1], POINT_RADIUS, WHITE);
+        fb.drawCircle(pts[i][0], pts[i][1], POINT_RADIUS, TEXT);
     }
 
     const char* labels[] = {"A", "D", "S", "R"};

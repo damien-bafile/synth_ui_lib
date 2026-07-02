@@ -10,7 +10,6 @@ class Keyboard : public Widget {
 public:
     static constexpr int MAX_TEXT = 64;
     static constexpr int HEADER_H = 28;
-    static constexpr int DONE_W = 50;
     static constexpr int ROWS = 4;
     static constexpr int GAP = 2;
 
@@ -41,8 +40,8 @@ public:
     };
 
     Keyboard(int x, int y, int w, int h,
-             uint16_t keyBg, uint16_t keyFg,
-             uint16_t specialKeyBg, uint16_t activeKeyBg,
+             uint16_t keyFg,
+             uint16_t activeKeyBg,
              uint16_t surfaceBg = BG_DARK);
 
     void draw(Framebuffer& fb, uint32_t ticks);
@@ -113,7 +112,7 @@ private:
     int pressedRow_ = -1;
     int pressedKey_ = -1;
 
-    uint16_t keyBg_, keyFg_, specialKeyBg_, activeKeyBg_, surfaceBg_;
+    uint16_t keyFg_, activeKeyBg_, surfaceBg_;
 };
 
 } // namespace ui
