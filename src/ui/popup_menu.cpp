@@ -44,6 +44,17 @@ void PopupMenu::dismiss() {
     pressedIdx_ = -1;
 }
 
+void PopupMenu::setItems(const Item* items, int count) {
+    items_ = items;
+    itemCount_ = count;
+    int w = calcWidth(items, count);
+    int h = calcHeight(count);
+    setBounds(x_, y_, w, h);
+    selected_ = -1;
+    pressedIdx_ = -1;
+    wasSelected_ = false;
+}
+
 bool PopupMenu::wasSelected() const {
     bool v = wasSelected_;
     wasSelected_ = false;

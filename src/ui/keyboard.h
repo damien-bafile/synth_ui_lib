@@ -118,6 +118,7 @@ public:
     void clearSelection() { selStart_ = selEnd_ = -1; }
     void deleteSelection();
     void insertText(const char* s);
+    bool wasDoubleTapped();
 
     char text_[MAX_TEXT];
     int cursorPos_ = 0;
@@ -132,6 +133,7 @@ public:
     int selEnd_ = -1;
     int lastTapChar_ = -1;
     uint32_t lastTapTime_ = 0;
+    bool doubleTapped_ = false;
 
     uint16_t keyFg_, activeKeyBg_, surfaceBg_;
 };

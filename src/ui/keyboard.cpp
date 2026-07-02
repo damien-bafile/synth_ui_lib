@@ -302,6 +302,12 @@ void Keyboard::insertText(const char* s) {
     cursorPos_ += slen;
 }
 
+bool Keyboard::wasDoubleTapped() {
+    bool v = doubleTapped_;
+    doubleTapped_ = false;
+    return v;
+}
+
 void Keyboard::selectWordAt(int pos) {
     int len = static_cast<int>(std::strlen(text_));
     if (len == 0) return;
@@ -588,6 +594,8 @@ void Keyboard::onTap(const TouchEvent& event) {
 
 void Keyboard::onDoubleTap(const TouchEvent& event) {
     if (!active_) return;
+
+    doubleTapped_ = true;
 
     int row, key;
     if (!hitTestKey(event.x, event.y, row, key)) return;

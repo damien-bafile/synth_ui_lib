@@ -19,11 +19,14 @@ public:
 
     void show();
     void showAt(int x, int y);
+    void setItems(const Item* items, int count);
     void dismiss();
     bool isVisible() const { return visible(); }
 
     int getSelectedIndex() const { return selected_; }
+    const char* getSelectedLabel() const { return (selected_ >= 0) ? items_[selected_].label : nullptr; }
     bool wasSelected() const;
+    int itemCount() const { return itemCount_; }
 
     void draw(Framebuffer& fb, uint32_t ticks);
 
