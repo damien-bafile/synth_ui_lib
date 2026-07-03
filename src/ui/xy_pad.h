@@ -20,14 +20,29 @@ public:
   float getX() const noexcept { return xFrac_; }
   float getY() const noexcept { return yFrac_; }
 
+  void setColors(uint16_t fg, uint16_t bg, uint16_t grid) noexcept {
+    fgColor_ = fg; bgColor_ = bg; gridColor_ = grid;
+  }
+
   void setFlipY(bool flip) { flipY_ = flip; }
   bool flipY() const { return flipY_; }
+
+  // Tint the bottom (X) and left (Y) border edges, e.g. to match axis
+  // labels. Unset = plain fgColor border (default look).
+  void setAxisColors(uint16_t xAxis, uint16_t yAxis) noexcept {
+    xAxisColor_ = xAxis;
+    yAxisColor_ = yAxis;
+    axisColorsSet_ = true;
+  }
 
 private:
   int size_;
   uint16_t fgColor_;
   uint16_t bgColor_;
   uint16_t gridColor_;
+  uint16_t xAxisColor_ = 0;
+  uint16_t yAxisColor_ = 0;
+  bool axisColorsSet_ = false;
   float xFrac_ = 0.5f;
   float yFrac_ = 0.5f;
   bool flipY_;

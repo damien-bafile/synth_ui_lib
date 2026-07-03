@@ -8,7 +8,7 @@ namespace ui {
 
 class TouchDispatcher {
 public:
-    static constexpr int MAX_WIDGETS = 32;
+    static constexpr int MAX_WIDGETS = 64;
     static constexpr int MAX_TOUCH_POINTS = 2;
 
     static constexpr int kDragThreshold = 4;

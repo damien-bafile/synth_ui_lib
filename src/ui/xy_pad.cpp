@@ -19,6 +19,12 @@ void XYPad::draw(Framebuffer& fb, float xValue, float yValue, MarkerStyle style,
   fb.fillRect(x_, y_, size_, size_, bgColor_);
   fb.drawRect(x_, y_, size_, size_, fgColor_);
 
+  // Axis tinting: left edge = Y axis, bottom edge = X axis.
+  if (axisColorsSet_) {
+    fb.fillRect(x_, y_, 1, size_, yAxisColor_);
+    fb.fillRect(x_, y_ + size_ - 1, size_, 1, xAxisColor_);
+  }
+
   if (showGrid) drawGrid(fb);
 
   drawAxes(fb);

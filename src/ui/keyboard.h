@@ -46,6 +46,11 @@ public:
 
     void draw(Framebuffer& fb, uint32_t ticks);
 
+    void setColors(uint16_t keyFg, uint16_t activeKeyBg,
+                   uint16_t surfaceBg) noexcept {
+        keyFg_ = keyFg; activeKeyBg_ = activeKeyBg; surfaceBg_ = surfaceBg;
+    }
+
     void setText(const char* text);
     const char* getText() const { return text_; }
     int cursorPos() const { return cursorPos_; }

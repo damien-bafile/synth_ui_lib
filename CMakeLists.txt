@@ -26,6 +26,7 @@ else()
 endif()
 
 set(UI_SOURCES
+    src/ui/colors.cpp
     src/ui/framebuffer.cpp
     src/ui/touch.cpp
     src/ui/widget.cpp
@@ -49,6 +50,14 @@ set(UI_SOURCES
     src/ui/layout.cpp
     src/ui/page_layout.cpp
     src/ui/popup_menu.cpp
+    src/ui/popup_slider.cpp
+    src/ui/infobar.cpp
+    src/ui/transport_bar.cpp
+    src/ui/label.cpp
+    src/ui/page_indicator.cpp
+    src/ui/tabbar.cpp
+    src/ui/voice_meter.cpp
+    src/ui/waveform_view.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${UI_SOURCES})

@@ -20,6 +20,9 @@ public:
     void show();
     void showAt(int x, int y);
     void setItems(const Item* items, int count);
+    void setColors(uint16_t bg, uint16_t fg, uint16_t accent) noexcept {
+        bg_ = bg; fg_ = fg; accent_ = accent;
+    }
     void dismiss();
     bool isVisible() const { return visible(); }
 

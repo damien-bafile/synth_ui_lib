@@ -17,6 +17,11 @@ public:
 
     float getValue() const noexcept { return value_; }
 
+    // Programmatic value change (e.g. popup step buttons), clamped to range.
+    void setValue(float v) noexcept {
+        value_ = v < min_ ? min_ : (v > max_ ? max_ : v);
+    }
+
     // Returns true once after the user touched/dragged the slider, then clears
     bool wasChanged() noexcept { bool v = changed_; changed_ = false; return v; }
 

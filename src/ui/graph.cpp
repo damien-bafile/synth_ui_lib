@@ -153,6 +153,38 @@ void Graph::draw(Framebuffer& fb, const AdsrEnvelope& env) {
     }
 }
 
+void Graph::drawPlayhead(Framebuffer& fb, uint8_t phase, float frac,
+                         uint16_t color) const {
+    const int gx0 = x_ + PADDING;
+    const int gw = w_ - PADDING * 2;
+    const int gyTop = y_ + PADDING;
+    const int gyBot = y_ + h_ - LABEL_H - 2;
+    if (gw <= 0 || gyBot <= gyTop) return;
+
+    int pts[4][2];
+    envToPoints(env_, pts);
+
+    // Each phase's playhead sweeps the segment between the previous
+    // handle and its own.
+    int segX0, segX1;
+    switch (phase) {
+        case 1: segX0 = gx0;       segX1 = pts[0][0]; break;  // ATTACK
+        case 2: segX0 = pts[0][0]; segX1 = pts[1][0]; break;  // DECAY
+        case 3: segX0 = pts[1][0]; segX1 = pts[2][0]; break;  // SUSTAIN
+        case 4: segX0 = pts[2][0]; segX1 = pts[3][0]; break;  // RELEASE
+        default: return;                                      // IDLE
+    }
+
+    if (frac < 0.0f) frac = 0.0f;
+    if (frac > 1.0f) frac = 1.0f;
+    int x = segX0 + (int)((segX1 - segX0) * frac);
+    if (x < gx0) x = gx0;
+    if (x > gx0 + gw - 1) x = gx0 + gw - 1;
+
+    fb.fillRect(x, gyTop, 1, gyBot - gyTop, color);
+    fb.fillCircle(x, gyTop + 1, 3, color);
+}
+
 bool Graph::onTouchBegan(const TouchEvent& event) {
     // Finger-friendly: any touch inside the graph grabs the nearest point.
     if (!contains(event.x, event.y)) return false;

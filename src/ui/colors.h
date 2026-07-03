@@ -23,10 +23,6 @@ constexpr uint16_t YELLOW     = RGB565(255, 255, 0);
 constexpr uint16_t CYAN       = RGB565(0,   255, 255);
 constexpr uint16_t MAGENTA    = RGB565(255, 0,   255);
 
-// Catppuccin Mocha surface/overlay/subtext (replaces neutral grays)
-constexpr uint16_t GRAY_DARK   = RGB565(69,  71,  90);   // surface1
-constexpr uint16_t GRAY_MID    = RGB565(108, 112, 134);  // overlay0
-constexpr uint16_t GRAY_LIGHT  = RGB565(166, 173, 200);  // subtext0
 constexpr uint16_t ORANGE      = RGB565(255, 140, 0);
 constexpr uint16_t PURPLE      = RGB565(140, 0,   255);
 constexpr uint16_t TEAL        = RGB565(0,   180, 180);
@@ -39,38 +35,39 @@ constexpr uint16_t SILVER      = RGB565(200, 200, 210);
 constexpr uint16_t GOLD        = RGB565(255, 200, 40);
 constexpr uint16_t CORAL       = RGB565(255, 80,  80);
 
-// UI Theme (Catppuccin Mocha)
-constexpr uint16_t LAVENDER    = RGB565(180, 190, 254);  // lavender
-constexpr uint16_t BG_DARK     = RGB565(17,  17,  27);   // crust
-constexpr uint16_t BG_MID      = RGB565(24,  24,  37);   // mantle
-constexpr uint16_t BG_SURFACE  = RGB565(30,  30,  46);   // base
-constexpr uint16_t TEXT        = RGB565(205, 214, 244);  // text
-constexpr uint16_t TEXT_DIM    = RGB565(127, 132, 156);  // overlay1
-constexpr uint16_t ACCENT_1    = RGB565(243, 139, 168);  // red
-constexpr uint16_t ACCENT_2    = RGB565(116, 199, 236);  // sapphire
-constexpr uint16_t ACCENT_3    = RGB565(203, 166, 247);  // mauve
-constexpr uint16_t ACCENT_4    = RGB565(166, 227, 161);  // green
-constexpr uint16_t HIGHLIGHT   = RGB565(249, 226, 175);  // yellow
-constexpr uint16_t HEADING     = RGB565(249, 226, 175);  // yellow
-constexpr uint16_t WARN        = RGB565(235, 160, 172);  // maroon
-constexpr uint16_t RECORD      = RGB565(243, 139, 168);  // red
-constexpr uint16_t PLAY        = RGB565(166, 227, 161);  // green
-constexpr uint16_t MUTE        = RGB565(250, 179, 135);  // peach
-constexpr uint16_t SOLO        = RGB565(249, 226, 175);  // yellow
+// ── Runtime theme palette ───────────────────────────────────────────
+// Mutable so the theme can switch at runtime; constant-initialized to
+// Catppuccin Mocha (dark). setTheme(Theme::LATTE) swaps in Catppuccin
+// Latte (light). Widgets that copy these values at construction should
+// re-apply them at draw time to pick up a theme change.
+enum class Theme : uint8_t { MOCHA, LATTE };
+void setTheme(Theme t);
+Theme currentTheme();
 
-// Track colors (8 Catppuccin Mocha accent colors)
-constexpr uint16_t TRACK_0     = RGB565(243, 139, 168);  // red
-constexpr uint16_t TRACK_1     = RGB565(250, 179, 135);  // peach
-constexpr uint16_t TRACK_2     = RGB565(249, 226, 175);  // yellow
-constexpr uint16_t TRACK_3     = RGB565(166, 227, 161);  // green
-constexpr uint16_t TRACK_4     = RGB565(148, 226, 213);  // teal
-constexpr uint16_t TRACK_5     = RGB565(137, 220, 235);  // sky
-constexpr uint16_t TRACK_6     = RGB565(203, 166, 247);  // mauve
-constexpr uint16_t TRACK_7     = RGB565(245, 194, 231);  // pink
+extern uint16_t GRAY_DARK;    // surface1
+extern uint16_t GRAY_MID;     // overlay0
+extern uint16_t GRAY_LIGHT;   // subtext0
+extern uint16_t LAVENDER;
+extern uint16_t BG_DARK;      // crust
+extern uint16_t BG_MID;       // mantle
+extern uint16_t BG_SURFACE;   // base
+extern uint16_t TEXT;
+extern uint16_t TEXT_DIM;     // overlay1
+extern uint16_t ACCENT_1;     // red
+extern uint16_t ACCENT_2;     // sapphire
+extern uint16_t ACCENT_3;     // mauve
+extern uint16_t ACCENT_4;     // green
+extern uint16_t HIGHLIGHT;    // yellow
+extern uint16_t HEADING;      // yellow
+extern uint16_t WARN;         // maroon
+extern uint16_t RECORD;       // red
+extern uint16_t PLAY;         // green
+extern uint16_t MUTE;         // peach
+extern uint16_t SOLO;         // yellow
 
-constexpr uint16_t TRACK_COLORS[8] = {
-    TRACK_0, TRACK_1, TRACK_2, TRACK_3,
-    TRACK_4, TRACK_5, TRACK_6, TRACK_7
-};
+// Track colors (8 accent colors of the active theme)
+extern uint16_t TRACK_0, TRACK_1, TRACK_2, TRACK_3;
+extern uint16_t TRACK_4, TRACK_5, TRACK_6, TRACK_7;
+extern uint16_t TRACK_COLORS[8];
 
 } // namespace ui

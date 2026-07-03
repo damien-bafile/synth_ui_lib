@@ -33,7 +33,9 @@ public:
     int getItemCount() const noexcept { return itemCount_; }
 
     bool isExpanded() const noexcept { return expanded_; }
-    void setExpanded(bool e) noexcept { expanded_ = e; }
+    // Expanded lists float above sibling widgets (the list may open upward
+    // over them), so raise the z-order while open.
+    void setExpanded(bool e) noexcept { expanded_ = e; setZOrder(e ? 1 : 0); }
 
     int getSelectedIndex() const noexcept { return selectedIndex_; }
     bool wasSelected() noexcept { bool v = wasSelected_; wasSelected_ = false; return v; }
@@ -43,6 +45,13 @@ public:
         fg_ = fg; bg_ = bg; accent_ = accent;
     }
     void setStyle(DropdownStyle style) noexcept { style_ = style; }
+
+    // Keep the expanded list inside [minY, maxY): when it would cross maxY
+    // it opens upward instead, so it never paints over status bars or a
+    // transport footer. Default (-1) keeps the legacy open-down behavior.
+    void setListLimits(int minY, int maxY) noexcept {
+        listMinY_ = minY; listMaxY_ = maxY;
+    }
 
     int getX() const noexcept { return x_; }
     int getY() const noexcept { return y_; }
@@ -56,6 +65,7 @@ private:
     void drawCompact(Framebuffer& fb, int selectedIndex, bool expanded);
     void drawChevron(Framebuffer& fb, int cx, int cy, bool down, uint16_t color);
     int getItemHeight() const noexcept;
+    int listOrigin() const noexcept;  // top Y of the expanded list
     void paintExpandedListImpl(Framebuffer& fb, int selectedIndex);
     static void paintExpandedListTrampoline(Framebuffer& fb, void* user);
 
@@ -68,6 +78,8 @@ private:
     bool expanded_ = false;
     int selectedIndex_ = -1;
     bool wasSelected_ = false;
+    int listMinY_ = -1;
+    int listMaxY_ = -1;
 
     bool onTouchBegan(const TouchEvent& event) override;
     void onTap(const TouchEvent& event) override;

@@ -27,6 +27,7 @@ public:
     const AdsrEnvelope& getEnvelope() const noexcept { return env_; }
 
     void setLineColors(uint16_t color) noexcept { lineColor_ = color; }
+    void setBackground(uint16_t bg) noexcept { bg_ = bg; }
     void setFillColors(uint16_t c1, uint16_t c2) noexcept { fillColor1_ = c1; fillColor2_ = c2; }
     void setPosition(int x, int y) noexcept { setBounds(x, y, w_, h_); }
     void setSize(int w, int h) noexcept { setBounds(x_, y_, w, h); }
@@ -35,6 +36,16 @@ public:
     int getY() const noexcept { return y_; }
     int getWidth() const noexcept { return w_; }
     int getHeight() const noexcept { return h_; }
+
+    // Pixel positions of the four envelope handles (attack peak, decay end,
+    // sustain-hold end, release end) as drawn by draw(). Lets overlays (e.g.
+    // playheads) align with the on-screen envelope geometry.
+    void envelopePoints(int pts[4][2]) const { envToPoints(env_, pts); }
+
+    // Vertical playhead over the drawn envelope: phase 1..4 = A/D/S/R,
+    // frac = 0..1 progress through that phase's segment.
+    void drawPlayhead(Framebuffer& fb, uint8_t phase, float frac,
+                      uint16_t color) const;
 
 private:
     uint16_t lineColor_, fillColor1_, fillColor2_, bg_;

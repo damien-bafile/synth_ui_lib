@@ -52,14 +52,19 @@ int TouchDispatcher::findWidget(const Widget* widget) const {
     return -1;
 }
 
-namespace {
-bool zOrderCompare(const Widget* a, const Widget* b) {
-    return a->zOrder() > b->zOrder();
-}
-}
-
 void TouchDispatcher::sortByZOrder() {
-    std::sort(widgets_, widgets_ + widgetCount_, zOrderCompare);
+    // Stable insertion sort (descending zOrder): widgets with equal zOrder
+    // keep their registration order, which screens rely on for touch
+    // priority. Cheaper than <algorithm> sorts for the few widgets we hold.
+    for (int i = 1; i < widgetCount_; i++) {
+        Widget* w = widgets_[i];
+        int j = i - 1;
+        while (j >= 0 && widgets_[j]->zOrder() < w->zOrder()) {
+            widgets_[j + 1] = widgets_[j];
+            j--;
+        }
+        widgets_[j + 1] = w;
+    }
 }
 
 void TouchDispatcher::dispatch(const TouchState* touchPoints, int count,

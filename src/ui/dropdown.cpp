@@ -45,6 +45,27 @@ int Dropdown::getItemHeight() const noexcept {
     }
 }
 
+int Dropdown::listOrigin() const noexcept {
+    int listH = getItemHeight() * itemCount_;
+
+    // Default: open downward, directly under the collapsed box.
+    int below;
+    switch (style_) {
+        case DropdownStyle::COMPACT:    below = y_ + h_ - 2; break;
+        case DropdownStyle::UNDERLINED: below = y_ + h_ + 2; break;
+        default:                        below = y_ + h_; break;
+    }
+    if (listMaxY_ < 0 || below + listH <= listMaxY_) return below;
+
+    // Not enough room below the box: open upward if the list fits above.
+    int above = y_ - listH;
+    if (above >= listMinY_) return above;
+
+    // Fits neither way: push it up just enough to respect the bottom limit.
+    int clamped = listMaxY_ - listH;
+    return clamped < listMinY_ ? listMinY_ : clamped;
+}
+
 void Dropdown::drawChevron(Framebuffer& fb, int cx, int cy, bool down, uint16_t color) {
     if (down) {
         fb.drawLine(cx - 4, cy - 1, cx, cy + 2, color);
@@ -73,18 +94,15 @@ void Dropdown::drawClassic(Framebuffer& fb, int selectedIndex, bool expanded) {
     drawChevron(fb, x_ + w_ - 10, y_ + h_ / 2, expanded, fg_);
 
     if (expanded) {
-        int ih = getItemHeight();
-        int listY = y_ + h_;
-        int listH = ih * itemCount_;
         lastSelectedIndex_ = selectedIndex;
-        fb.enqueueOverlay(x_, listY, w_, listH,
+        fb.enqueueOverlay(x_, listOrigin(), w_, getItemHeight() * itemCount_,
                           &Dropdown::paintExpandedListTrampoline, this);
     }
 }
 
 void Dropdown::drawOutlined(Framebuffer& fb, int selectedIndex, bool expanded) {
     fb.fillRect(x_, y_, w_, h_, BG_DARK);
-    fb.drawRect(x_, y_, w_, h_, expanded ? accent_ : GRAY_MID);
+    fb.drawRect(x_, y_, w_, h_, accent_);
 
     if (selectedIndex >= 0 && selectedIndex < itemCount_ && items_[selectedIndex]) {
         int tx = x_ + 4;
@@ -99,11 +117,8 @@ void Dropdown::drawOutlined(Framebuffer& fb, int selectedIndex, bool expanded) {
     drawChevron(fb, x_ + w_ - 10, y_ + h_ / 2, expanded, TEXT_DIM);
 
     if (expanded) {
-        int ih = getItemHeight();
-        int listY = y_ + h_;
-        int listH = ih * itemCount_;
         lastSelectedIndex_ = selectedIndex;
-        fb.enqueueOverlay(x_, listY, w_, listH,
+        fb.enqueueOverlay(x_, listOrigin(), w_, getItemHeight() * itemCount_,
                           &Dropdown::paintExpandedListTrampoline, this);
     }
 }
@@ -128,11 +143,8 @@ void Dropdown::drawUnderlined(Framebuffer& fb, int selectedIndex, bool expanded)
     drawChevron(fb, x_ + w_ - 4, y_ + h_ / 2, expanded, TEXT_DIM);
 
     if (expanded) {
-        int ih = getItemHeight();
-        int listY = y_ + h_ + 2;
-        int listH = ih * itemCount_;
         lastSelectedIndex_ = selectedIndex;
-        fb.enqueueOverlay(x_, listY, w_, listH,
+        fb.enqueueOverlay(x_, listOrigin(), w_, getItemHeight() * itemCount_,
                           &Dropdown::paintExpandedListTrampoline, this);
     }
 }
@@ -157,11 +169,8 @@ void Dropdown::drawCompact(Framebuffer& fb, int selectedIndex, bool expanded) {
     drawChevron(fb, x_ + w_ - 8, cy + ch / 2, expanded, fg_);
 
     if (expanded) {
-        int ih = 14;
-        int listY = cy + ch;
-        int listH = ih * itemCount_;
         lastSelectedIndex_ = selectedIndex;
-        fb.enqueueOverlay(x_, listY, w_, listH,
+        fb.enqueueOverlay(x_, listOrigin(), w_, getItemHeight() * itemCount_,
                           &Dropdown::paintExpandedListTrampoline, this);
     }
 }
@@ -172,28 +181,8 @@ void Dropdown::paintExpandedListTrampoline(Framebuffer& fb, void* user) {
 }
 
 void Dropdown::paintExpandedListImpl(Framebuffer& fb, int selectedIndex) {
-    int listY;
-    int ih;
-
-    switch (style_) {
-        case DropdownStyle::COMPACT: {
-            int ch = h_ - 4;
-            int cy = y_ + 2;
-            ih = 14;
-            listY = cy + ch;
-            break;
-        }
-        case DropdownStyle::UNDERLINED: {
-            ih = getItemHeight();
-            listY = y_ + h_ + 2;
-            break;
-        }
-        default: {
-            ih = getItemHeight();
-            listY = y_ + h_;
-            break;
-        }
-    }
+    int ih = getItemHeight();
+    int listY = listOrigin();
 
     for (int i = 0; i < itemCount_; i++) {
         if (!items_[i]) continue;
@@ -273,18 +262,7 @@ bool Dropdown::onTouchBegan(const TouchEvent& event) {
 
     // Check expanded items
     if (expanded_) {
-        int iy;
-        switch (style_) {
-            case DropdownStyle::COMPACT:
-                iy = y_ + h_ - 2;
-                break;
-            case DropdownStyle::UNDERLINED:
-                iy = y_ + h_ + 2;
-                break;
-            default:
-                iy = y_ + h_;
-                break;
-        }
+        int iy = listOrigin();
         for (int i = 0; i < itemCount_; i++) {
             if (event.y >= iy && event.y < iy + ih &&
                 event.x >= x_ && event.x < x_ + w_) {
@@ -302,30 +280,19 @@ void Dropdown::onTap(const TouchEvent& event) {
 
     // Check header tap
     if (contains(event.x, event.y)) {
-        expanded_ = !expanded_;
+        setExpanded(!expanded_);
         return;
     }
 
     // Check item tap
     if (expanded_) {
-        int iy;
-        switch (style_) {
-            case DropdownStyle::COMPACT:
-                iy = y_ + h_ - 2;
-                break;
-            case DropdownStyle::UNDERLINED:
-                iy = y_ + h_ + 2;
-                break;
-            default:
-                iy = y_ + h_;
-                break;
-        }
+        int iy = listOrigin();
         for (int i = 0; i < itemCount_; i++) {
             if (event.y >= iy && event.y < iy + ih &&
                 event.x >= x_ && event.x < x_ + w_) {
                 selectedIndex_ = i;
                 wasSelected_ = true;
-                expanded_ = false;
+                setExpanded(false);
                 return;
             }
             iy += ih;
