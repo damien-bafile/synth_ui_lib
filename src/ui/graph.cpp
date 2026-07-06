@@ -153,13 +153,10 @@ void Graph::draw(Framebuffer& fb, const AdsrEnvelope& env) {
     }
 }
 
-void Graph::drawPlayhead(Framebuffer& fb, uint8_t phase, float frac,
-                         uint16_t color) const {
+int Graph::playheadX(uint8_t phase, float frac) const {
     const int gx0 = x_ + PADDING;
     const int gw = w_ - PADDING * 2;
-    const int gyTop = y_ + PADDING;
-    const int gyBot = y_ + h_ - LABEL_H - 2;
-    if (gw <= 0 || gyBot <= gyTop) return;
+    if (gw <= 0) return -1;
 
     int pts[4][2];
     envToPoints(env_, pts);
@@ -172,7 +169,7 @@ void Graph::drawPlayhead(Framebuffer& fb, uint8_t phase, float frac,
         case 2: segX0 = pts[0][0]; segX1 = pts[1][0]; break;  // DECAY
         case 3: segX0 = pts[1][0]; segX1 = pts[2][0]; break;  // SUSTAIN
         case 4: segX0 = pts[2][0]; segX1 = pts[3][0]; break;  // RELEASE
-        default: return;                                      // IDLE
+        default: return -1;                                   // IDLE
     }
 
     if (frac < 0.0f) frac = 0.0f;
@@ -180,9 +177,21 @@ void Graph::drawPlayhead(Framebuffer& fb, uint8_t phase, float frac,
     int x = segX0 + (int)((segX1 - segX0) * frac);
     if (x < gx0) x = gx0;
     if (x > gx0 + gw - 1) x = gx0 + gw - 1;
+    return x;
+}
+
+void Graph::drawPlayheadLine(Framebuffer& fb, int x, uint16_t color) const {
+    const int gyTop = y_ + PADDING;
+    const int gyBot = y_ + h_ - LABEL_H - 2;
+    if (x < 0 || gyBot <= gyTop) return;
 
     fb.fillRect(x, gyTop, 1, gyBot - gyTop, color);
     fb.fillCircle(x, gyTop + 1, 3, color);
+}
+
+void Graph::drawPlayhead(Framebuffer& fb, uint8_t phase, float frac,
+                         uint16_t color) const {
+    drawPlayheadLine(fb, playheadX(phase, frac), color);
 }
 
 bool Graph::onTouchBegan(const TouchEvent& event) {

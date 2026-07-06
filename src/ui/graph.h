@@ -47,6 +47,12 @@ public:
     void drawPlayhead(Framebuffer& fb, uint8_t phase, float frac,
                       uint16_t color) const;
 
+    // Split form of drawPlayhead for callers that animate the position
+    // themselves: playheadX maps phase+frac to a pixel column (-1 when
+    // idle/invalid), drawPlayheadLine draws the marker at a given column.
+    int playheadX(uint8_t phase, float frac) const;
+    void drawPlayheadLine(Framebuffer& fb, int x, uint16_t color) const;
+
 private:
     uint16_t lineColor_, fillColor1_, fillColor2_, bg_;
     int selectedPoint_ = -1;
