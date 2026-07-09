@@ -346,6 +346,12 @@ Because it is signal-agnostic, driving the UI from **video** is the identical
 pattern — push frame brightness into an `EnvelopeFollower`, or per-region
 brightness into a `FollowerBank`; nothing audio-specific is involved.
 
+A complete, runnable audio→UI pipeline — FFT band energies from
+[`synth_dsp_lib`](https://github.com/damien-bafile/synth_dsp_lib) feeding a
+`FollowerBank`→`MeterArray`, with an onset detector driving a beat-flash
+`Trigger` — is in `examples/audio_reactive_demo.cpp` (needs both repos checked
+out; see its header for the compile line).
+
 A host-side smoke test covering the invariants (easing endpoints, tween
 timing/looping, timeline sequencing, pool exhaustion, follower/trigger/bank
 behavior) is in `examples/anim_demo.cpp` — see the header comment for the
@@ -519,7 +525,7 @@ CMake exports `compile_commands.json` for Clang, IntelliSense, and LSP integrati
 
 ## License
 
-[Add your license here]
+MIT — see [LICENSE](LICENSE).
 
 ## Contributing
 
