@@ -224,6 +224,74 @@ sequencer.handleTouch(touch);
 | **MeterArray** | Multi-channel levels | Stereo/surround metering, mixer |
 | **XYPad** | 2D parameter control | Filter sweep, morphing, mixing |
 
+## Animation
+
+Widgets stay stateless — the animation layer produces plain values (floats and
+RGB565 colors) that you feed into the same `draw()` calls. Everything is driven
+by the caller's `uint32_t` millisecond clock (the same stamp passed to
+`TouchDispatcher::dispatch()`); there is no hidden clock, no update loop, and no
+heap allocation. Three pieces, from simplest to most capable:
+
+**1. Easing curves** (`ui/easing.h`) — a curated `Easing` enum
+(`LINEAR`, `QUAD_*`, `CUBIC_*`, `BACK_OUT`, `SINE_INOUT`, `EXPO_OUT`,
+`ELASTIC_OUT`, `BOUNCE_OUT`). Evaluate one with `applyEasing(easing, t)` for
+`t` in `[0,1]` (input is clamped for you). Polynomial curves are `constexpr`.
+
+**2. `Tween`** (`ui/tween.h`) — a caller-owned one-shot interpolation you store
+next to the value it drives:
+
+```cpp
+#include "ui/tween.h"
+
+Tween fade;
+fade.start(0.0f, 1.0f, 250, Easing::CUBIC_OUT, now);  // 0→1 over 250ms
+
+// ...each frame:
+slider.draw(fb, fade.value(now));   // read the animated value, draw as usual
+if (fade.done(now)) { /* settled */ }
+```
+
+`start()` also takes an optional `delayMs` and a `LoopMode`
+(`ONCE`/`LOOP`/`PINGPONG`); `retarget(to, now)` redirects to a new target from
+wherever it currently is (e.g. a slider chasing input). Helpers `lerp()`,
+`lerpColor()` (RGB565 press-flash / state transitions), and `approach()` (a
+one-pole smoother for meter ballistics with no fixed start/end) live here too.
+
+**3. `Timeline`** (`ui/anim.h`) — a fixed-capacity, heap-free manager for
+fire-and-forget and sequenced animations addressed by handle:
+
+```cpp
+#include "ui/anim.h"
+
+Timeline timeline;
+auto hIn  = timeline.add(0.0f, 1.0f, 200, Easing::CUBIC_OUT);   // fade in
+auto hOut = timeline.then(hIn, 0.0f, 400, Easing::CUBIC_INOUT); // then out
+
+// ...once per frame, before drawing:
+timeline.tick(now);
+panel.draw(fb, timeline.value(hIn));
+```
+
+`tick(now)` advances every animation in one O(N) pass over a small array; the
+clock is captured on the first `tick()`, so `add()` needs no timestamp.
+Finished `ONCE` animations free their slots automatically, and handles carry a
+generation tag so reading a reused slot safely returns `0`. It slots into your
+existing render pass with a single added line:
+
+```cpp
+uint32_t now = millis();
+dispatcher.dispatch(points, n, now);   // existing input
+timeline.tick(now);                    // NEW: advance all animations
+
+fb.fillScreen(colors::BG_DARK);
+graph.drawPlayheadLine(fb, graph.playheadX(phase, tween.value(now)),
+                       colors::ACCENT_1);   // externally-animated position
+```
+
+A host-side smoke test covering the invariants (easing endpoints, tween
+timing/looping, timeline sequencing, pool exhaustion) is in
+`examples/anim_demo.cpp` — see the header comment for the one-line compile.
+
 ## Color Palette
 
 The library includes 50 predefined colors optimized for music production:
@@ -361,6 +429,9 @@ synth_ui_lib/
     ├── waveform.h/cpp          # Waveform display (NEW)
     ├── meter_array.h/cpp       # Multi-channel metering (NEW)
     ├── xy_pad.h/cpp            # 2D parameter control (NEW)
+    ├── easing.h                # Easing curves (Easing enum, applyEasing)
+    ├── tween.h                 # Tween + lerp/lerpColor/approach helpers
+    ├── anim.h/cpp              # Timeline animation manager
     └── [other widgets...]
 ```
 

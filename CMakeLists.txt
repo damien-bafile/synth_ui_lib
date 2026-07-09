@@ -58,6 +58,7 @@ set(UI_SOURCES
     src/ui/tabbar.cpp
     src/ui/voice_meter.cpp
     src/ui/waveform_view.cpp
+    src/ui/anim.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${UI_SOURCES})

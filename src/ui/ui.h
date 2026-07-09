@@ -39,3 +39,6 @@
 #include "tabbar.h"
 #include "voice_meter.h"
 #include "waveform_view.h"
+#include "easing.h"
+#include "tween.h"
+#include "anim.h"
