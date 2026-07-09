@@ -88,6 +88,7 @@ private:
 
     bool wasToggled_ = false;
     float dragStartValue_ = 0.0f;
+    int dragStartY_ = 0;
 
     static constexpr float kPi = 3.14159265f;
 

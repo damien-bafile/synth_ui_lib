@@ -39,8 +39,12 @@ public:
     void setPosition(int x, int y) noexcept { setBounds(x, y, w_, h_); }
     void setColors(const uint16_t trackColors[MAX_TRACKS],
                    uint16_t accent, uint16_t bg) noexcept;
-    void setStepCount(int n) noexcept { steps_ = (n <= MAX_STEPS) ? n : MAX_STEPS; }
-    void setTrackCount(int n) noexcept { tracks_ = (n <= MAX_TRACKS) ? n : MAX_TRACKS; }
+    void setStepCount(int n) noexcept {
+        steps_ = (n < 1) ? 1 : ((n > MAX_STEPS) ? MAX_STEPS : n);
+    }
+    void setTrackCount(int n) noexcept {
+        tracks_ = (n < 1) ? 1 : ((n > MAX_TRACKS) ? MAX_TRACKS : n);
+    }
     void setActiveTrack(int track) noexcept;
     int getActiveTrack() const noexcept { return activeTrack_; }
 

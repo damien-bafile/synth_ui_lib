@@ -40,7 +40,7 @@ constexpr uint16_t CORAL       = RGB565(255, 80,  80);
 // Catppuccin Mocha (dark). setTheme(Theme::LATTE) swaps in Catppuccin
 // Latte (light). Widgets that copy these values at construction should
 // re-apply them at draw time to pick up a theme change.
-enum class Theme : uint8_t { MOCHA, LATTE };
+enum class Theme : uint8_t { MOCHA, LATTE, CYBERPUNK_NEON, CYBERDREAM_LIGHT };
 void setTheme(Theme t);
 Theme currentTheme();
 

@@ -114,13 +114,18 @@ void RadialDial::draw(Framebuffer& fb, float value, bool active) const {
 bool RadialDial::onTouchBegan(const TouchEvent& event) {
     if (!isInside(event.x, event.y)) return false;
     dragStartValue_ = value_;
+    dragStartY_ = event.y;
     return true;
 }
 
-void RadialDial::onDragMoved(const TouchEvent& /*event*/, int /*dx*/, int dy) {
+void RadialDial::onDragMoved(const TouchEvent& event, int /*dx*/, int /*dy*/) {
+    // The dispatcher hands us incremental dx/dy per frame, but the dial value
+    // is anchored to where the drag started, so accumulate the total vertical
+    // travel from the touch-down point instead of the last frame's delta.
+    int totalDy = event.y - dragStartY_;
     float range = max_ - min_;
     float sensitivity = (range > 0.0f) ? range / (2.0f * radius_) : 0.0f;
-    float delta = -static_cast<float>(dy) * sensitivity;
+    float delta = -static_cast<float>(totalDy) * sensitivity;
     value_ = ui::clamp(dragStartValue_ + delta, min_, max_);
     value_ = snap(value_);
 }

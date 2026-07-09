@@ -1,0 +1,83 @@
+#+TITLE: synth_ui_lib — UI Widget Summary
+#+DATE: 2026-07-06
+
+All widget classes live under =src/ui/=.
+
+* Base / Infrastructure
+
+| File                  | Class/Type        | Description                                                     |
+|-----------------------+-------------------+-----------------------------------------------------------------|
+| widget.h / widget.cpp | Widget            | Abstract base class for interactive widgets. Geometry, visibility, z-order, touch/gesture event system (tap, double-tap, long-press, drag). |
+| framebuffer.h / .cpp  | Framebuffer       | Drawing surface with pixel/rect/line/circle/fill/text primitives, synth/FX icon drawing, deferred overlay system (popups, dropdowns). |
+| touch_dispatcher.h    | TouchDispatcher   | Routes raw touch input to registered Widget instances. 2-point multitouch, capture, drag, long-press, double-tap, z-order hit testing. |
+| touch_event.h         | TouchEvent        | Touch event data: position, phase (Began/Moved/Ended/Cancelled), finger ID, timestamp. |
+| touch.h / touch.cpp   | TouchState, TouchCalibration | Raw touch state + 6-parameter affine calibration transform. |
+| rect.h                | Rect              | Rectangle struct (x, y, w, h) with contains().                 |
+| grid.h                | Grid              | Static helper: grid-based cell() layout computation.             |
+| layout.h / layout.cpp | LayoutBuilder     | Sequential flow layout with padding/spacing/row-column cursors. |
+| page_layout.h / .cpp  | PageLayout        | Named page (screen) manager with tab bar drawing.               |
+
+* Interactive Control Widgets (extend Widget)
+
+| File                     | Class           | Description                                                     |
+|--------------------------+-----------------+-----------------------------------------------------------------|
+| button.h / button.cpp    | Button          | Labeled pressable button. Optional synth/FX icon, configurable colors, optional 1px border (can be flat). Reports tap via wasTapped(). |
+| slider.h / slider.cpp    | Slider          | Horizontal or vertical slider. Min/max range, label, colors. Reports via wasChanged(). |
+| toggle.h / toggle.cpp    | Toggle          | Small on/off toggle (default 30×16). Optionally labeled.        |
+| checkbox.h / checkbox.cpp| Checkbox        | Labeled checkbox (default 12×12 box + text).                    |
+| radio.h / radio.cpp      | Radio           | Circular radio button (default r=7) with label. Static drawGroup() for vertical groups. |
+| textfield.h / textfield.cpp | TextField    | Single-line text input with cursor/focus state.                 |
+| dropdown.h / dropdown.cpp| Dropdown        | Selection dropdown (≤16 items, optional synth icons). 4 styles: CLASSIC, OUTLINED, UNDERLINED, COMPACT. Overlay-based expansion, auto-upward flip. |
+| tabbar.h / tabbar.cpp    | TabBar          | Full-width tab bar (≤6 equal tabs). Active tab fills with accent. Reports via wasSelected(). |
+| keyboard.h / keyboard.cpp| Keyboard        | Full QWERTY on-screen keyboard. 4 layers (lower/upper/symbols-1/symbols-2). Cursor, selection, backspace, space, return. |
+| hbar.h / hbar.cpp        | HorizontalBar   | Progress/level bar + static drawCenteredCents() for bipolar displays (e.g. detune). Touch/drag adjustable. |
+| xy_pad.h / xy_pad.cpp    | XYPad           | 2D touch pad. 3 marker styles (CIRCLE, CROSSHAIR, SQUARE). Flip-Y, grid, axis colors. Reports normalized X/Y fractions. |
+| radial_dial.h / radial_dial.cpp | RadialDial | Rotary knob drawn as a circular arc. Configurable arc thickness, ticks (outward/inward/both/off), start angle/sweep, stepped values, font scale, label position, suffix, sign display. Most configurable widget. |
+
+* Display / Data Visualization (draw-only or limited interaction)
+
+| File                           | Class           | Description                                                     |
+|--------------------------------+-----------------+-----------------------------------------------------------------|
+| panel.h / panel.cpp            | Panel           | Titled bordered container (not Widget-derived).                  |
+| graph.h / graph.cpp            | Graph           | ADSR envelope graph. Touch/drag moves breakpoints. Playhead overlay methods. |
+| stepgrid.h / stepgrid.cpp      | StepGrid        | Step sequencer grid (≤32 steps × 8 tracks). 5 styles: SQUARES, BARS, DOTS, STRIPS, GLOW. Velocity bars, note labels, playhead highlight. Touch toggles steps. |
+| waveform.h / waveform.cpp      | Waveform        | Oscillator waveform display: SINE, SQUARE, TRIANGLE, SAWTOOTH, CUSTOM. Configurable amplitude/frequency. Optional grid. |
+| waveform_view.h / waveform_view.cpp | WaveformView | Audio sample waveform (min/max per pixel, cached). Placeholder when empty. drawMarker() for playhead. |
+| meter_array.h / meter_array.cpp| MeterArray      | Multi-channel VU meter. VERTICAL, HORIZONTAL, or CIRCULAR styles. Peak hold. Green→yellow→red color transitions. |
+| voice_meter.h / voice_meter.cpp| VoiceMeter      | Per-voice activity indicator boxes. Border: NONE, ACTIVE_ONLY, or ALL. |
+| label.h / label.cpp            | Label           | Text label with LEFT/CENTER/RIGHT/VERTICAL alignment.            |
+| page_indicator.h / page_indicator.cpp | PageIndicator | Page readout (PG p/c).                                        |
+
+* Composite / Higher-Level (compose multiple sub-widgets)
+
+| File                           | Class           | Description                                                     |
+|--------------------------------+-----------------+-----------------------------------------------------------------|
+| popup_menu.h / popup_menu.cpp  | PopupMenu       | Floating context menu (vertical list, overlay-based, self-dismissing). |
+| popup_slider.h / popup_slider.cpp | PopupSlider   | Floating slider window with value readout, close button, ± step buttons. Composes Slider + Button. |
+| transport_bar.h / transport_bar.cpp | TransportBar | Full-width transport strip: play/stop/rec buttons, color swatches, optional hamburger, status dot, left/right status text. Manages PlayState (STOPPED/PLAYING/PAUSED). |
+| infobar.h / infobar.cpp        | InfoBar         | Single-row status bar with left/right text, multi-segment colored text support. |
+| frame.h                        | Frame           | 1px rectangular outline (not Widget-derived).                    |
+| divider.h                      | Divider         | Horizontal or vertical rule (configurable thickness).            |
+
+* Animation System (value producers for widget inputs)
+
+| File                | Class/Type         | Description                                                     |
+|---------------------+--------------------+-----------------------------------------------------------------|
+| easing.h            | Easing (enum)      | 12 easing curves: LINEAR, QUAD_IN/OUT/INOUT, CUBIC_IN/OUT/INOUT, BACK_OUT, SINE_INOUT, EXPO_OUT, ELASTIC_OUT, BOUNCE_OUT. |
+| tween.h             | Tween (struct), LoopMode (enum) | Caller-owned one-shot interpolation with start/duration/delay/easing. ONCE / LOOP / PINGPONG modes. lerp(), lerpColor(), approach() helpers. |
+| anim.h / anim.cpp   | Timeline           | Fixed-capacity (32 tracks), heap-free animation manager. add(), then(), tick(), value(), cancel(). |
+| anim_source.h       | EnvelopeFollower, Trigger, FollowerBank<N> | Data-driven animation sources: envelope follower (attack/release ballistics), trigger (threshold-crossing with hysteresis/refractory), multi-channel follower array. mapRange() utility. |
+
+* Asset / Theme Support
+
+| File             | Description                                               |
+|------------------+-----------------------------------------------------------|
+| colors.h / .cpp  | 50-color RGB565 palette with 4 themes (Mocha, Latte, Cyberpunk Neon, Cyberdream Light). Semantic colors: text, accents, backgrounds, record/play/mute/solo, 8 track colors. |
+| font.h           | 5×7 monospace bitmap font (ASCII 32–127).                  |
+| icons.h          | SynthIcon (25 icons: waveforms, ADSR, filter, transport) + FxIcon (14 icons: reverb, delay, distortion, chorus) — 5×5 pixel glyphs. |
+
+* Aggregate
+
+| File        | Description                                               |
+|-------------+-----------------------------------------------------------|
+| ui.h        | Master include for all ui/ headers.                      |
