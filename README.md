@@ -288,9 +288,68 @@ graph.drawPlayheadLine(fb, graph.playheadX(phase, tween.value(now)),
                        colors::ACCENT_1);   // externally-animated position
 ```
 
+### Data-driven sources (audio / video / any signal)
+
+By themselves, the pieces above are *caller-driven* — you decide when to
+`start()` a tween. To make the UI react to a live signal, `ui/anim_source.h`
+adds sources that turn a pushed feature value into animation. The library is
+**signal-agnostic**: it never parses audio or video. You extract a feature
+(audio RMS/peak/FFT-band energy, video brightness/motion, MIDI velocity…) as a
+plain `float` and push it — the *same* code drives any data source.
+
+**`EnvelopeFollower`** — attack/release ballistics over a level (fast rise, slow
+fall). The core audio-reactive primitive:
+
+```cpp
+#include "ui/anim_source.h"
+
+EnvelopeFollower vol;
+vol.configure(/*attackPerSec=*/1000.0f, /*releasePerSec=*/6.0f);
+
+// audio side computes a feature, e.g. float rms = computeRms(buf, n);
+// each UI frame:
+float level = vol.push(rms, now);   // smoothed 0..1
+meter.draw(fb, &level, nullptr);    // existing widget, unchanged
+```
+
+**`Trigger`** — fires a `Tween` pulse when a signal crosses a threshold (beat,
+onset, gate), with hysteresis + a refractory window. `fire(now)` launches the
+same pulse from any discrete event (MIDI note-on, a tap):
+
+```cpp
+Trigger beat;
+// on/off thresholds, pulse 1→0 over 180ms, min 120ms between fires
+beat.configure(0.6f, 0.4f, 1.0f, 0.0f, 180, Easing::CUBIC_OUT, 120);
+
+beat.process(onsetStrength, now);   // or beat.fire(now) on note-on
+uint16_t glow = lerpColor(colors::BG_DARK, colors::ACCENT_1, beat.value(now));
+```
+
+**`FollowerBank<N>`** — a heap-free bank of followers, so an FFT (audio) or a
+region grid (video) drives the array-taking widgets directly:
+
+```cpp
+FollowerBank<8> spectrum;
+spectrum.configure(1000.0f, 8.0f);
+
+float levels[8];
+spectrum.push(bandEnergies, 8, now);   // FFT bands or per-region brightness
+spectrum.read(levels, 8);
+meters.draw(fb, levels);               // MeterArray, unchanged
+```
+
+**`mapRange(x, inLo, inHi, outLo, outHi, easing)`** — remap a raw feature (dB,
+0–255 brightness) into a UI range or a `lerpColor` `t`, with a curve and
+saturating clamp.
+
+Because it is signal-agnostic, driving the UI from **video** is the identical
+pattern — push frame brightness into an `EnvelopeFollower`, or per-region
+brightness into a `FollowerBank`; nothing audio-specific is involved.
+
 A host-side smoke test covering the invariants (easing endpoints, tween
-timing/looping, timeline sequencing, pool exhaustion) is in
-`examples/anim_demo.cpp` — see the header comment for the one-line compile.
+timing/looping, timeline sequencing, pool exhaustion, follower/trigger/bank
+behavior) is in `examples/anim_demo.cpp` — see the header comment for the
+one-line compile.
 
 ## Color Palette
 
@@ -432,6 +491,7 @@ synth_ui_lib/
     ├── easing.h                # Easing curves (Easing enum, applyEasing)
     ├── tween.h                 # Tween + lerp/lerpColor/approach helpers
     ├── anim.h/cpp              # Timeline animation manager
+    ├── anim_source.h           # Data-driven sources (follower, trigger, bank)
     └── [other widgets...]
 ```
 

@@ -42,3 +42,4 @@
 #include "easing.h"
 #include "tween.h"
 #include "anim.h"
+#include "anim_source.h"
