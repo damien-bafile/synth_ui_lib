@@ -22,9 +22,24 @@ public:
     static constexpr int BTN_REC  = 2;
     static constexpr int BTN_MENU = 3;
 
+    enum class BpmAnimMode : uint8_t {
+        SWEEP_BAR,
+        PULSE,
+        WALKING_DOT,
+        STEP_PROGRESS,
+        COUNT
+    };
+
     TransportBar(int x, int y, int w, int h);
 
     void setSwatches(const uint16_t* colors, int count);
+
+    // Per-track note activity animation (0-255 intensity per track).
+    // Pass null or count=0 to disable.
+    void setNoteActivity(const uint8_t* intensities, int count);
+
+    // BPM-synced timing indicator.
+    void setBpmIndicator(BpmAnimMode mode, float stepProgress, uint8_t currentStep);
 
     // Optional hamburger button at the bar's right edge (off by default);
     // tappedButton() reports it as BTN_MENU.
@@ -43,8 +58,14 @@ public:
     void addTo(TouchDispatcher& d);
     int tappedButton();  // BTN_PLAY/BTN_STOP/BTN_REC/BTN_MENU, -1 = none
 
-    // Left text column origin (lets the app overlay a tap target on it).
+    // Left/right text column origin (lets the app overlay a tap target).
     int leftTextX() const noexcept { return x_ + LEFT_TEXT_X; }
+    int rightTextX(const char* text) const noexcept {
+        int tw = Framebuffer::textWidth(text);
+        int rx = x_ + w_ - tw - 4;
+        if (menuButton_) rx -= BTN_W + BTN_GAP + 2;
+        return rx;
+    }
     int textY() const noexcept { return y_ + (h_ - 7) / 2; }  // FONT_H rows
 
     int getX() const noexcept { return x_; }
@@ -57,7 +78,7 @@ private:
     static constexpr int BTN_H       = 12;
     static constexpr int BTN_GAP     = 2;
     static constexpr int SWATCH_X    = 90;
-    static constexpr int SWATCH_STEP = 6;
+    static constexpr int SWATCH_STEP = 9;
     static constexpr int SWATCH_SIZE = 4;
     static constexpr int LEFT_TEXT_X = 142;
 
@@ -74,6 +95,13 @@ private:
     bool menuButton_ = false;
     bool statusDot_ = false;
     uint16_t statusDotColor_ = 0;
+
+    // Animation state
+    uint8_t noteActivity_[MAX_SWATCHES] = {};
+    int noteActivityCount_ = 0;
+    BpmAnimMode bpmAnimMode_ = BpmAnimMode::SWEEP_BAR;
+    float stepProgress_ = 0.0f;
+    uint8_t currentStep_ = 0;
 };
 
 } // namespace ui

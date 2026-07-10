@@ -90,6 +90,7 @@ private:
     uint16_t bg_;
     int touchedTrack_ = -1;
     int touchedStep_ = -1;
+    float smoothPlayStep_ = -1.0f;
 
     bool mapTouch(int tx, int ty, int& outTrack, int& outStep) const;
     bool onTouchBegan(const TouchEvent& event) override;

@@ -30,6 +30,7 @@ public:
                uint16_t track = BG_MID) noexcept;
 
     void draw(Framebuffer& fb, float value, bool active = true) const;
+    void setBounds(int x, int y, int w, int h) noexcept;
 
     float getValue() const noexcept { return value_; }
     bool wasToggled() noexcept { bool v = wasToggled_; wasToggled_ = false; return v; }

@@ -303,6 +303,18 @@ void StepGrid::draw(Framebuffer& fb,
                     const char* const notes[MAX_TRACKS][MAX_STEPS]) {
     fb.fillRect(x_, y_, w_, h_, bg_);
 
+    // Smooth playhead step so it glides between columns instead of jumping.
+    if (playStep >= 0 && playStep < steps_) {
+        if (smoothPlayStep_ < 0.0f) smoothPlayStep_ = (float)playStep;
+        else smoothPlayStep_ += ((float)playStep - smoothPlayStep_) * 0.2f;
+        int animStep = (int)(smoothPlayStep_ + 0.5f);
+        if (animStep < 0) animStep = 0;
+        if (animStep >= steps_) animStep = steps_ - 1;
+        playStep = animStep;
+    } else {
+        smoothPlayStep_ = -1.0f;
+    }
+
     switch (style_) {
         case StepGridStyle::SQUARES:
             drawSquares(fb, pattern, playStep, notes);

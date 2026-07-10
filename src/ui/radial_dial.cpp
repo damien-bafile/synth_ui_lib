@@ -23,6 +23,11 @@ RadialDial::RadialDial(int x, int y, int radius,
     setBounds(x - radius, y - radius, radius * 2, radius * 2);
 }
 
+void RadialDial::setBounds(int x, int y, int w, int h) noexcept {
+    x_ = x; y_ = y; w_ = w; h_ = h;
+    radius_ = std::min(w, h) / 2;
+}
+
 void RadialDial::setColors(uint16_t fg, uint16_t bg, uint16_t track) noexcept {
     fg_ = fg;
     bg_ = bg;

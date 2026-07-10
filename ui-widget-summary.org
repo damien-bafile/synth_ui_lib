@@ -23,6 +23,7 @@ All widget classes live under =src/ui/=.
 |--------------------------+-----------------+-----------------------------------------------------------------|
 | button.h / button.cpp    | Button          | Labeled pressable button. Optional synth/FX icon, configurable colors, optional 1px border (can be flat). Reports tap via wasTapped(). |
 | slider.h / slider.cpp    | Slider          | Horizontal or vertical slider. Min/max range, label, colors. Reports via wasChanged(). |
+| vu_slider.h / vu_slider.cpp | VUSlider     | Vertical (default) or horizontal slider with integrated VU meter in track background. Green→yellow→red gradient fill. Independent slider thumb. Reports via wasChanged(). |
 | toggle.h / toggle.cpp    | Toggle          | Small on/off toggle (default 30×16). Optionally labeled.        |
 | checkbox.h / checkbox.cpp| Checkbox        | Labeled checkbox (default 12×12 box + text).                    |
 | radio.h / radio.cpp      | Radio           | Circular radio button (default r=7) with label. Static drawGroup() for vertical groups. |
@@ -46,7 +47,7 @@ All widget classes live under =src/ui/=.
 | meter_array.h / meter_array.cpp| MeterArray      | Multi-channel VU meter. VERTICAL, HORIZONTAL, or CIRCULAR styles. Peak hold. Green→yellow→red color transitions. |
 | voice_meter.h / voice_meter.cpp| VoiceMeter      | Per-voice activity indicator boxes. Border: NONE, ACTIVE_ONLY, or ALL. |
 | label.h / label.cpp            | Label           | Text label with LEFT/CENTER/RIGHT/VERTICAL alignment.            |
-| page_indicator.h / page_indicator.cpp | PageIndicator | Page readout (PG p/c).                                        |
+| page_indicator.h / page_indicator.cpp | PageIndicator | Page readout (PG p/c) with touchable < / > brackets.          |
 
 * Composite / Higher-Level (compose multiple sub-widgets)
 
@@ -54,7 +55,7 @@ All widget classes live under =src/ui/=.
 |--------------------------------+-----------------+-----------------------------------------------------------------|
 | popup_menu.h / popup_menu.cpp  | PopupMenu       | Floating context menu (vertical list, overlay-based, self-dismissing). |
 | popup_slider.h / popup_slider.cpp | PopupSlider   | Floating slider window with value readout, close button, ± step buttons. Composes Slider + Button. |
-| transport_bar.h / transport_bar.cpp | TransportBar | Full-width transport strip: play/stop/rec buttons, color swatches, optional hamburger, status dot, left/right status text. Manages PlayState (STOPPED/PLAYING/PAUSED). |
+| transport_bar.h / transport_bar.cpp | TransportBar | Full-width transport strip: play/stop/rec buttons, color swatches (with note-activity pulse + scale), BPM timing indicators (SWEEP_BAR/PULSE/WALKING_DOT/STEP_PROGRESS), optional hamburger, status dot, left/right status text. Manages PlayState (STOPPED/PLAYING/PAUSED). |
 | infobar.h / infobar.cpp        | InfoBar         | Single-row status bar with left/right text, multi-segment colored text support. |
 | frame.h                        | Frame           | 1px rectangular outline (not Widget-derived).                    |
 | divider.h                      | Divider         | Horizontal or vertical rule (configurable thickness).            |
