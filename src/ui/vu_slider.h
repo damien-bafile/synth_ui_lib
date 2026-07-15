@@ -34,6 +34,7 @@ public:
 
 private:
     float value_ = 0.0f;
+    float peakHold_ = 0.0f;
     uint16_t fg_, bg_;
     bool changed_ = false;
     bool vertical_;

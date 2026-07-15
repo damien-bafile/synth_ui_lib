@@ -97,17 +97,43 @@ bool StepGrid::mapTouch(int tx, int ty, int& outTrack, int& outStep) const {
 }
 
 bool StepGrid::onTouchBegan(const TouchEvent& event) {
-    return mapTouch(event.x, event.y, touchedTrack_, touchedStep_);
+    if (mapTouch(event.x, event.y, touchedTrack_, touchedStep_)) {
+        touchStartTrack_ = touchedTrack_;
+        touchStartStep_ = touchedStep_;
+        dragAccumY_ = 0;
+        lastTouchY_ = event.y;
+        return true;
+    }
+    return false;
 }
 
 bool StepGrid::onTouchMoved(const TouchEvent& event) {
     mapTouch(event.x, event.y, touchedTrack_, touchedStep_);
+    dragAccumY_ += event.y - lastTouchY_;
+    lastTouchY_ = event.y;
     return true;
 }
 
 void StepGrid::onTouchEnded(const TouchEvent&) {
     touchedTrack_ = -1;
     touchedStep_ = -1;
+}
+
+void StepGrid::onTap(const TouchEvent&) {
+    tapped_ = true;
+}
+
+bool StepGrid::wasTapped() {
+    bool v = tapped_;
+    tapped_ = false;
+    return v;
+}
+
+int StepGrid::takeDragTicks(int pxThreshold) {
+    int ticks = dragAccumY_ / pxThreshold;
+    if (ticks != 0)
+        dragAccumY_ -= ticks * pxThreshold;
+    return ticks;
 }
 
 void StepGrid::drawSquares(Framebuffer& fb,
@@ -135,11 +161,23 @@ void StepGrid::drawSquares(Framebuffer& fb,
     }
 
     if (playStep >= 0 && playStep < steps_) {
+        // Highlight the current step column in white (snapped to the cell).
         for (int t = 0; t < tracks_; t++) {
             int cx = cellX(playStep);
             int cy = cellY(t);
-            fb.drawRect(cx, cy, cw, ch, accent_);
+            fb.drawRect(cx, cy, cw, ch, WHITE);
         }
+        // Plus a 1px accent line that glides continuously between cells,
+        // matching the Arranger playhead.
+        float fs = smoothPlayStep_ < 0.0f ? (float)playStep : smoothPlayStep_;
+        int lo = (int)fs;
+        if (lo < 0) lo = 0;
+        if (lo > steps_ - 1) lo = steps_ - 1;
+        int hi = (lo + 1 < steps_) ? lo + 1 : lo;
+        int ca = cellX(lo) + cw / 2;
+        int cb = (hi != lo) ? cellX(hi) + cw / 2 : ca + cw;
+        int cx = ca + (int)((fs - (float)lo) * (float)(cb - ca) + 0.5f);
+        fb.drawLine(cx, y_, cx, y_ + h_, accent_);
     }
 }
 

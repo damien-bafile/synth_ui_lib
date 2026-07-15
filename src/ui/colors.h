@@ -65,6 +65,14 @@ extern uint16_t PLAY;         // green
 extern uint16_t MUTE;         // peach
 extern uint16_t SOLO;         // yellow
 
+// Standard audio-meter gradient. Fixed across themes — the meter is a
+// functional element, so consistent green/orange/red semantics matter more
+// than matching each theme's accent palette. Peak-hold line and clip
+// indicator use METER_HIGH.
+extern uint16_t METER_LOW;    // green  — safe
+extern uint16_t METER_MID;    // orange — caution
+extern uint16_t METER_HIGH;   // red    — clip
+
 // Track colors (8 accent colors of the active theme)
 extern uint16_t TRACK_0, TRACK_1, TRACK_2, TRACK_3;
 extern uint16_t TRACK_4, TRACK_5, TRACK_6, TRACK_7;

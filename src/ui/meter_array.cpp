@@ -29,13 +29,13 @@ void MeterArray::draw(Framebuffer& fb, const float* levels,
 }
 
 uint16_t MeterArray::getLevelColor(float level) {
-  // Green -> Yellow -> Red gradient
+  // Green -> Orange -> Red gradient (fixed across themes via METER_*)
   if (level < 0.5f) {
-    return TEXT;
+    return METER_LOW;
   } else if (level < 0.8f) {
-    return WARN;
+    return METER_MID;
   } else {
-    return HIGHLIGHT;
+    return METER_HIGH;
   }
 }
 

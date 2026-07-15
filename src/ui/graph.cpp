@@ -7,6 +7,18 @@ namespace ui {
 static constexpr float ADSR_ATTACK_MAX_MS  = 2000.0f;
 static constexpr float ADSR_DECAY_MAX_MS   = 2000.0f;
 static constexpr float ADSR_RELEASE_MAX_MS = 4000.0f;
+
+// Cube-root time mapping: musically typical values (5-200 ms) occupy a
+// visible share of the band instead of collapsing against the left edge as
+// they do linearly against the 2000-4000 ms maxes. Exactly invertible, so
+// draw and touch round-trip losslessly and a dragged handle stays under the
+// finger.
+static float timeToFrac(float ms, float max_ms) {
+    return cbrtf(ms / max_ms);
+}
+static float fracToTime(float t, float max_ms) {
+    return t * t * t * max_ms;
+}
 static constexpr int   POINT_RADIUS = 3;
 static constexpr int   LABEL_H      = 10;
 static constexpr int   PADDING      = 4;
@@ -49,16 +61,16 @@ void Graph::envToPoints(const AdsrEnvelope& env, int pts[4][2]) const {
     int rBand = aBand;
     int holdW = gw - aBand - dBand - rBand;  // sustain hold, ~10%
 
-    pts[0][0] = x0 + (int)(aBand * env.attack_ms / ADSR_ATTACK_MAX_MS);
+    pts[0][0] = x0 + (int)(aBand * timeToFrac(env.attack_ms, ADSR_ATTACK_MAX_MS));
     pts[0][1] = y0;
 
-    pts[1][0] = pts[0][0] + (int)(dBand * env.decay_ms / ADSR_DECAY_MAX_MS);
+    pts[1][0] = pts[0][0] + (int)(dBand * timeToFrac(env.decay_ms, ADSR_DECAY_MAX_MS));
     pts[1][1] = y0 + (int)(gh * (1.0f - env.sustain_level));
 
     pts[2][0] = pts[1][0] + holdW;
     pts[2][1] = pts[1][1];
 
-    pts[3][0] = pts[2][0] + (int)(rBand * env.release_ms / ADSR_RELEASE_MAX_MS);
+    pts[3][0] = pts[2][0] + (int)(rBand * timeToFrac(env.release_ms, ADSR_RELEASE_MAX_MS));
     pts[3][1] = y0 + gh;
 }
 
@@ -238,20 +250,24 @@ bool Graph::onTouchMoved(const TouchEvent& event) {
 
     switch (selectedPoint_) {
     case 0:  // attack time (x)
-        env_.attack_ms = clamp01((float)(event.x - x0) / aBand) * ADSR_ATTACK_MAX_MS;
+        env_.attack_ms = fracToTime(clamp01((float)(event.x - x0) / aBand),
+                                    ADSR_ATTACK_MAX_MS);
         break;
     case 1:  // decay time (x) + sustain level (y)
-        env_.decay_ms = clamp01((float)(event.x - pts[0][0]) / aBand) * ADSR_DECAY_MAX_MS;
+        env_.decay_ms = fracToTime(clamp01((float)(event.x - pts[0][0]) / aBand),
+                                   ADSR_DECAY_MAX_MS);
         env_.sustain_level = clamp01(1.0f - (float)(event.y - y0) / gh);
         break;
     case 2:  // sustain level (y); x slides the plateau = adjusts decay time
         env_.sustain_level = clamp01(1.0f - (float)(event.y - y0) / gh);
-        env_.decay_ms = clamp01((float)(event.x - holdW - pts[0][0]) / aBand) *
-                        ADSR_DECAY_MAX_MS;
+        env_.decay_ms = fracToTime(
+            clamp01((float)(event.x - holdW - pts[0][0]) / aBand),
+            ADSR_DECAY_MAX_MS);
         break;
     case 3:  // release time (x)
-        env_.release_ms = clamp01((float)(event.x - (pts[1][0] + holdW)) / aBand) *
-                          ADSR_RELEASE_MAX_MS;
+        env_.release_ms = fracToTime(
+            clamp01((float)(event.x - (pts[1][0] + holdW)) / aBand),
+            ADSR_RELEASE_MAX_MS);
         break;
     }
     return true;

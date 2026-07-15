@@ -32,6 +32,7 @@ void PopupMenu::show() {
     setVisible(true);
     selected_ = -1;
     pressedIdx_ = -1;
+    wasDismissed_ = false;
 }
 
 void PopupMenu::showAt(int x, int y) {
@@ -41,6 +42,7 @@ void PopupMenu::showAt(int x, int y) {
 
 void PopupMenu::dismiss() {
     setVisible(false);
+    wasDismissed_ = true;
     pressedIdx_ = -1;
 }
 
@@ -53,11 +55,18 @@ void PopupMenu::setItems(const Item* items, int count) {
     selected_ = -1;
     pressedIdx_ = -1;
     wasSelected_ = false;
+    wasDismissed_ = false;
 }
 
 bool PopupMenu::wasSelected() const {
     bool v = wasSelected_;
     wasSelected_ = false;
+    return v;
+}
+
+bool PopupMenu::wasDismissed() const {
+    bool v = wasDismissed_;
+    wasDismissed_ = false;
     return v;
 }
 

@@ -23,6 +23,9 @@ uint16_t RECORD      = RGB565(243, 139, 168);  // red
 uint16_t PLAY        = RGB565(166, 227, 161);  // green
 uint16_t MUTE        = RGB565(250, 179, 135);  // peach
 uint16_t SOLO        = RGB565(249, 226, 175);  // yellow
+uint16_t METER_LOW   = RGB565(0,   200, 0);    // green
+uint16_t METER_MID   = RGB565(255, 165, 0);    // orange
+uint16_t METER_HIGH  = RGB565(255, 0,   0);    // red
 uint16_t TRACK_0     = RGB565(243, 139, 168);  // red
 uint16_t TRACK_1     = RGB565(250, 179, 135);  // peach
 uint16_t TRACK_2     = RGB565(249, 226, 175);  // yellow
@@ -43,6 +46,7 @@ struct Palette {
     uint16_t bg_dark, bg_mid, bg_surface, text, text_dim;
     uint16_t accent1, accent2, accent3, accent4;
     uint16_t highlight, heading, warn, record, play, mute, solo;
+    uint16_t meter_low, meter_mid, meter_high;
     uint16_t tracks[8];
 };
 
@@ -56,6 +60,7 @@ static const Palette k_mocha = {
     RGB565(249, 226, 175), RGB565(249, 226, 175), RGB565(235, 160, 172),
     RGB565(243, 139, 168), RGB565(166, 227, 161), RGB565(250, 179, 135),
     RGB565(249, 226, 175),
+    RGB565(0, 200, 0), RGB565(255, 165, 0), RGB565(255, 0, 0),
     { RGB565(243, 139, 168), RGB565(250, 179, 135), RGB565(249, 226, 175),
       RGB565(166, 227, 161), RGB565(148, 226, 213), RGB565(137, 220, 235),
       RGB565(203, 166, 247), RGB565(245, 194, 231) },
@@ -83,6 +88,7 @@ static const Palette k_latte = {
     RGB565(64,  160, 43),   // green
     RGB565(254, 100, 11),   // peach
     RGB565(223, 142, 29),   // yellow
+    RGB565(0, 200, 0), RGB565(255, 165, 0), RGB565(255, 0, 0),
     { RGB565(210, 15, 57),  RGB565(254, 100, 11), RGB565(223, 142, 29),
       RGB565(64, 160, 43),  RGB565(23, 146, 153), RGB565(4, 165, 229),
       RGB565(136, 57, 239), RGB565(234, 118, 203) },
@@ -110,6 +116,7 @@ static const Palette k_cyberpunk_neon = {
     RGB565(10,  189, 198),  // play       = cyan
     RGB565(245, 120, 0),    // mute       = orange
     RGB565(211, 0,   196),  // solo       = pink
+    RGB565(0, 200, 0), RGB565(255, 165, 0), RGB565(255, 0, 0),
     { RGB565(255, 0, 0),    RGB565(10, 189, 198), RGB565(113, 28, 145),
       RGB565(211, 0, 196),  RGB565(245, 120, 0),  RGB565(18, 62, 124),
       RGB565(10, 189, 198), RGB565(215, 215, 213) },
@@ -137,6 +144,7 @@ static const Palette k_cyberdream_light = {
     RGB565(0,   139, 12),   // play       = green
     RGB565(153, 123, 0),    // mute       = yellow
     RGB565(0,   87,  209),  // solo       = blue
+    RGB565(0, 200, 0), RGB565(255, 165, 0), RGB565(255, 0, 0),
     { RGB565(209, 21, 0),   RGB565(0, 87, 209),   RGB565(160, 24, 255),
       RGB565(0, 139, 12),   RGB565(153, 123, 0),  RGB565(0, 140, 153),
       RGB565(160, 24, 255), RGB565(0, 87, 209) },
@@ -163,6 +171,8 @@ void setTheme(Theme t) {
     WARN = p->warn;            RECORD = p->record;
     PLAY = p->play;            MUTE = p->mute;
     SOLO = p->solo;
+    METER_LOW = p->meter_low;  METER_MID = p->meter_mid;
+    METER_HIGH = p->meter_high;
     TRACK_0 = p->tracks[0]; TRACK_1 = p->tracks[1];
     TRACK_2 = p->tracks[2]; TRACK_3 = p->tracks[3];
     TRACK_4 = p->tracks[4]; TRACK_5 = p->tracks[5];

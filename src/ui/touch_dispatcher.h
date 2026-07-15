@@ -22,6 +22,7 @@ public:
     void add(Widget* widget);
     void remove(const Widget* widget);
     void clear();
+    void reset();
     int count() const { return widgetCount_; }
 
     // Convert TouchState[] to TouchEvents and route

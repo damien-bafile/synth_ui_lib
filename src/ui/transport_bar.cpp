@@ -51,7 +51,7 @@ void TransportBar::setBpmIndicator(BpmAnimMode mode, float stepProgress, uint8_t
 void TransportBar::draw(Framebuffer& fb, PlayState state, bool recording,
                         const char* leftText, const char* rightText) {
     btns_[BTN_PLAY].setColors(PLAY, BG_DARK);
-    btns_[BTN_STOP].setColors(TEXT_DIM, BG_DARK);
+    btns_[BTN_STOP].setColors(WHITE, BG_DARK);
     btns_[BTN_REC].setColors(RECORD, BG_DARK);
     btns_[BTN_MENU].setColors(ACCENT_3, BG_DARK);
 
@@ -71,8 +71,8 @@ void TransportBar::draw(Framebuffer& fb, PlayState state, bool recording,
     bool stopped = (state == PlayState::STOPPED);
     btns_[BTN_STOP].draw(fb, stopped);
     fb.drawSynthIcon(btnX(BTN_STOP) + (BTN_W - 5) / 2, iy, SynthIcon::STOP,
-                     stopped ? BG_DARK : TEXT_DIM,
-                     stopped ? TEXT_DIM : BG_DARK);
+                     stopped ? BG_DARK : WHITE,
+                     stopped ? WHITE : BG_DARK);
 
     btns_[BTN_REC].draw(fb, recording);
     fb.drawSynthIcon(btnX(BTN_REC) + (BTN_W - 5) / 2, iy, SynthIcon::RECORD,
@@ -116,8 +116,26 @@ void TransportBar::draw(Framebuffer& fb, PlayState state, bool recording,
             fb.fillRect(barX, y_ + h_ - 2, 2, 1, ACCENT_2);
             break;
         }
-        case BpmAnimMode::PULSE:
+        case BpmAnimMode::PULSE: {
+            // Dancing stickman — four frames cycled by currentStep
+            static const uint8_t stickman[4][5] = {
+                {0x00, 0x09, 0x76, 0x09, 0x00},  // arms up
+                {0x00, 0x24, 0x1A, 0x41, 0x00},  // run A
+                {0x00, 0x04, 0x3F, 0x44, 0x00},  // T-pose
+                {0x01, 0x40, 0x1A, 0x24, 0x00},  // run B
+            };
+            const auto* g = stickman[currentStep_ % 4];
+            int sx = x_ + SWATCH_X + swatchCount_ * SWATCH_STEP + 6;
+            int sy = y_ + (h_ - 7) / 2;
+            for (int col = 0; col < 5; col++) {
+                uint8_t bits = g[col];
+                for (int row = 0; row < 7; row++) {
+                    if ((bits >> row) & 1)
+                        fb.drawLine(sx + col, sy + row, sx + col, sy + row, ACCENT_2);
+                }
+            }
             break;
+        }
         case BpmAnimMode::WALKING_DOT:
             if (currentStep_ < swatchCount_) {
                 int dx = x_ + SWATCH_X + currentStep_ * SWATCH_STEP + SWATCH_STEP / 2 - 1;

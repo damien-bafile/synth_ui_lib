@@ -45,6 +45,17 @@ void TouchDispatcher::clear() {
     widgetCount_ = 0;
 }
 
+void TouchDispatcher::reset() {
+    widgetCount_ = 0;
+    for (int i = 0; i < MAX_TOUCH_POINTS; i++) {
+        prevPressed_[i] = false;
+        tracks_[i].active = false;
+        tracks_[i].captured = nullptr;
+        tracks_[i].dragging = false;
+        tracks_[i].longPressed = false;
+    }
+}
+
 int TouchDispatcher::findWidget(const Widget* widget) const {
     for (int i = 0; i < widgetCount_; i++) {
         if (widgets_[i] == widget) return i;

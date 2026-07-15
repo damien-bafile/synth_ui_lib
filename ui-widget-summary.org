@@ -23,7 +23,7 @@ All widget classes live under =src/ui/=.
 |--------------------------+-----------------+-----------------------------------------------------------------|
 | button.h / button.cpp    | Button          | Labeled pressable button. Optional synth/FX icon, configurable colors, optional 1px border (can be flat). Reports tap via wasTapped(). |
 | slider.h / slider.cpp    | Slider          | Horizontal or vertical slider. Min/max range, label, colors. Reports via wasChanged(). |
-| vu_slider.h / vu_slider.cpp | VUSlider     | Vertical (default) or horizontal slider with integrated VU meter in track background. Green→yellow→red gradient fill. Independent slider thumb. Reports via wasChanged(). |
+| vu_slider.h / vu_slider.cpp | VUSlider     | Vertical (default) or horizontal slider with integrated VU meter in track background. Green→orange→red gradient fill (METER_LOW/MID/HIGH, fixed across themes) + peak-hold line + clip indicator at top. Independent slider thumb. Reports via wasChanged(). Applies a one-pixel dead zone to meterValue/peakHold_ so sub-pixel noise doesn't flicker. |
 | toggle.h / toggle.cpp    | Toggle          | Small on/off toggle (default 30×16). Optionally labeled.        |
 | checkbox.h / checkbox.cpp| Checkbox        | Labeled checkbox (default 12×12 box + text).                    |
 | radio.h / radio.cpp      | Radio           | Circular radio button (default r=7) with label. Static drawGroup() for vertical groups. |
@@ -44,7 +44,7 @@ All widget classes live under =src/ui/=.
 | stepgrid.h / stepgrid.cpp      | StepGrid        | Step sequencer grid (≤32 steps × 8 tracks). 5 styles: SQUARES, BARS, DOTS, STRIPS, GLOW. Velocity bars, note labels, playhead highlight. Touch toggles steps. |
 | waveform.h / waveform.cpp      | Waveform        | Oscillator waveform display: SINE, SQUARE, TRIANGLE, SAWTOOTH, CUSTOM. Configurable amplitude/frequency. Optional grid. |
 | waveform_view.h / waveform_view.cpp | WaveformView | Audio sample waveform (min/max per pixel, cached). Placeholder when empty. drawMarker() for playhead. |
-| meter_array.h / meter_array.cpp| MeterArray      | Multi-channel VU meter. VERTICAL, HORIZONTAL, or CIRCULAR styles. Peak hold. Green→yellow→red color transitions. |
+| meter_array.h / meter_array.cpp| MeterArray      | Multi-channel VU meter. VERTICAL, HORIZONTAL, or CIRCULAR styles. Peak hold. Green→orange→red color transitions (METER_LOW/MID/HIGH, fixed across themes). |
 | voice_meter.h / voice_meter.cpp| VoiceMeter      | Per-voice activity indicator boxes. Border: NONE, ACTIVE_ONLY, or ALL. |
 | label.h / label.cpp            | Label           | Text label with LEFT/CENTER/RIGHT/VERTICAL alignment.            |
 | page_indicator.h / page_indicator.cpp | PageIndicator | Page readout (PG p/c) with touchable < / > brackets.          |

@@ -29,6 +29,7 @@ public:
     int getSelectedIndex() const { return selected_; }
     const char* getSelectedLabel() const { return (selected_ >= 0) ? items_[selected_].label : nullptr; }
     bool wasSelected() const;
+    bool wasDismissed() const;
     int itemCount() const { return itemCount_; }
 
     void draw(Framebuffer& fb, uint32_t ticks);
@@ -51,6 +52,7 @@ private:
     int itemH_ = 24;
     int selected_ = -1;
     mutable bool wasSelected_ = false;
+    mutable bool wasDismissed_ = false;
     int pressedIdx_ = -1;
 
     uint16_t bg_, fg_, accent_;

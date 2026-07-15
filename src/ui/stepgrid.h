@@ -35,6 +35,16 @@ public:
     int getTouchedStep() const noexcept { return touchedStep_; }
     bool hasTouch() const noexcept { return touchedTrack_ >= 0; }
 
+    // Origin cell of the current touch (set on Began, unchanged during drag).
+    int getTouchStartTrack() const noexcept { return touchStartTrack_; }
+    int getTouchStartStep()  const noexcept { return touchStartStep_; }
+    // Returns the number of pyThreshold-sized Y increments accumulated since
+    // the last call (consumes them). Used by screens for vertical-drag actions.
+    int takeDragTicks(int pxThreshold);
+    // True once after a tap (touch ended without drag), consumed on read.
+    bool wasTapped();
+    int dragAccumY() const noexcept { return dragAccumY_; }
+
     void setStyle(StepGridStyle style) noexcept { style_ = style; }
     void setPosition(int x, int y) noexcept { setBounds(x, y, w_, h_); }
     void setColors(const uint16_t trackColors[MAX_TRACKS],
@@ -90,12 +100,19 @@ private:
     uint16_t bg_;
     int touchedTrack_ = -1;
     int touchedStep_ = -1;
+    int touchStartTrack_ = -1;
+    int touchStartStep_ = -1;
+    int dragAccumY_ = 0;
+    int lastTouchY_ = 0;
     float smoothPlayStep_ = -1.0f;
 
     bool mapTouch(int tx, int ty, int& outTrack, int& outStep) const;
     bool onTouchBegan(const TouchEvent& event) override;
     bool onTouchMoved(const TouchEvent& event) override;
     void onTouchEnded(const TouchEvent& event) override;
+    void onTap(const TouchEvent& event) override;
+
+    bool tapped_ = false;
 };
 
 } // namespace ui
