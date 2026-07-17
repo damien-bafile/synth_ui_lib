@@ -35,6 +35,16 @@ build-verbose:
     cmake --build {{ build_dir }} -j --verbose
 
 ####################
+# Testing
+####################
+
+# Configure and build tests, then run them
+test *args:
+    cmake -S . -B {{ build_dir }} -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug
+    cmake --build {{ build_dir }} -j
+    ctest --test-dir {{ build_dir }} --output-on-failure {{ args }}
+
+####################
 # Code Quality
 ####################
 

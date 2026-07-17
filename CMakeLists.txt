@@ -4,6 +4,22 @@ project(synth_ui_lib LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# ── Tests ──────────────────────────────────────────────────────────────
+option(BUILD_TESTS "Build unit tests" ON)
+
+if(BUILD_TESTS)
+  enable_testing()
+  include(FetchContent)
+  set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
+  FetchContent_Declare(
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG        v1.15.2
+  )
+  FetchContent_MakeAvailable(googletest)
+  add_subdirectory(test)
+endif()
+
 add_compile_options(-Wall -Wextra -Wpedantic)
 
 # Export compile commands for IDE support and tooling
