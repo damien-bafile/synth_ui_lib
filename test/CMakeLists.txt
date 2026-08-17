@@ -14,6 +14,14 @@ add_executable(test_synth_ui
   test_widget.cpp
   test_page_layout.cpp
   test_framebuffer.cpp
+  test_button.cpp
+  test_toggle.cpp
+  test_checkbox.cpp
+  test_radio.cpp
+  test_slider.cpp
+  test_vu_slider.cpp
+  test_label.cpp
+  test_page_indicator.cpp
 )
 target_link_libraries(test_synth_ui PRIVATE synth_ui_lib_static GTest::gtest_main)
 target_include_directories(test_synth_ui PRIVATE ${CMAKE_SOURCE_DIR}/src)

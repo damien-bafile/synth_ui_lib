@@ -11,6 +11,7 @@
 #include "grid.h"
 #include "button.h"
 #include "slider.h"
+#include "vu_slider.h"
 #include "toggle.h"
 #include "checkbox.h"
 #include "radio.h"

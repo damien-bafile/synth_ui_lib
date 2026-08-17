@@ -49,6 +49,7 @@ set(UI_SOURCES
     src/ui/touch_dispatcher.cpp
     src/ui/button.cpp
     src/ui/slider.cpp
+    src/ui/vu_slider.cpp
     src/ui/toggle.cpp
     src/ui/checkbox.cpp
     src/ui/radio.cpp
