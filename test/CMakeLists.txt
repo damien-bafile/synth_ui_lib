@@ -22,6 +22,23 @@ add_executable(test_synth_ui
   test_vu_slider.cpp
   test_label.cpp
   test_page_indicator.cpp
+  test_textfield.cpp
+  test_hbar.cpp
+  test_panel.cpp
+  test_infobar.cpp
+  test_tabbar.cpp
+  test_voice_meter.cpp
+  test_stepgrid.cpp
+  test_xy_pad.cpp
+  test_graph.cpp
+  test_radial_dial.cpp
+  test_dropdown.cpp
+  test_popup_menu.cpp
+  test_transport_bar.cpp
+  test_keyboard.cpp
+  test_meter_array.cpp
+  test_waveform.cpp
+  test_waveform_view.cpp
 )
 target_link_libraries(test_synth_ui PRIVATE synth_ui_lib_static GTest::gtest_main)
 target_include_directories(test_synth_ui PRIVATE ${CMAKE_SOURCE_DIR}/src)
