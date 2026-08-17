@@ -15,12 +15,12 @@ help:
 
 # Configure and build (debug)
 build *args:
-    cmake -S . -B {{ build_dir }} -DCMAKE_BUILD_TYPE=Debug
+    cmake -S . -B {{ build_dir }} -G Ninja -DCMAKE_BUILD_TYPE=Debug
     cmake --build {{ build_dir }} -j {{ args }}
 
 # Configure and build (release)
 build-release *args:
-    cmake -S . -B {{ build_dir }}/release -DCMAKE_BUILD_TYPE=Release
+    cmake -S . -B {{ build_dir }}/release -G Ninja -DCMAKE_BUILD_TYPE=Release
     cmake --build {{ build_dir }}/release -j {{ args }}
 
 # Clean build artifacts
@@ -40,7 +40,7 @@ build-verbose:
 
 # Configure and build tests, then run them
 test *args:
-    cmake -S . -B {{ build_dir }} -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug
+    cmake -S . -B {{ build_dir }} -G Ninja -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug
     cmake --build {{ build_dir }} -j
     ctest --test-dir {{ build_dir }} --output-on-failure {{ args }}
 
