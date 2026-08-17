@@ -35,6 +35,7 @@ All widget classes live under =src/ui/=.
 | list_view.h / list_view.cpp | ListView | Scrollable item list / patch browser (≤64 items, generalizes Dropdown's fixed 16-item cap). Vertical-drag scrolling. Optional reorder mode: long-press then drag swaps rows past a half-row threshold; getOrder() exposes the resulting display order. |
 | hbar.h / hbar.cpp        | HorizontalBar   | Progress/level bar + static drawCenteredCents() for bipolar displays (e.g. detune). Touch/drag adjustable. |
 | xy_pad.h / xy_pad.cpp    | XYPad           | 2D touch pad. 3 marker styles (CIRCLE, CROSSHAIR, SQUARE). Flip-Y, grid, axis colors. Reports normalized X/Y fractions. |
+| spinbox.h / spinbox.cpp  | Spinbox         | Stepped numeric field: "[-] value [+]" with tappable minus/plus zones (hit-rects cached from the last draw(), PageIndicator-style). Reports via wasChanged(). |
 | radial_dial.h / radial_dial.cpp | RadialDial | Rotary knob drawn as a circular arc. Configurable arc thickness, ticks (outward/inward/both/off), start angle/sweep, stepped values, font scale, label position, suffix, sign display. Most configurable widget. |
 | mod_matrix.h / mod_matrix.cpp | ModMatrix | Modulation routing grid (≤8 sources × ≤8 dests). Owns per-cell depth state (OFF/LOW/MED/HIGH) internally, cycled by tapping a cell. Cell hit-testing modeled on StepGrid's mapTouch/cellX/cellY. |
 

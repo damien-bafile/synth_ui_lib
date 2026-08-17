@@ -88,6 +88,7 @@ set(UI_SOURCES
     src/ui/mod_matrix.cpp
     src/ui/tooltip.cpp
     src/ui/list_view.cpp
+    src/ui/spinbox.cpp
     src/ui/anim.cpp
 )
 

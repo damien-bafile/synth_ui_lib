@@ -44,6 +44,7 @@ add_executable(test_synth_ui
   test_mod_matrix.cpp
   test_tooltip.cpp
   test_list_view.cpp
+  test_spinbox.cpp
 )
 target_link_libraries(test_synth_ui PRIVATE synth_ui_lib_static GTest::gtest_main)
 target_include_directories(test_synth_ui PRIVATE ${CMAKE_SOURCE_DIR}/src)

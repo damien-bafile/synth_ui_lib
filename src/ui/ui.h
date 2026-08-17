@@ -45,6 +45,7 @@
 #include "mod_matrix.h"
 #include "tooltip.h"
 #include "list_view.h"
+#include "spinbox.h"
 #include "easing.h"
 #include "tween.h"
 #include "anim.h"
