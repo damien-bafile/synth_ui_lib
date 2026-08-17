@@ -19,6 +19,7 @@
 #include "hbar.h"
 #include "textfield.h"
 #include "keyboard.h"
+#include "piano_keyboard.h"
 #include "graph.h"
 #include "dropdown.h"
 #include "stepgrid.h"

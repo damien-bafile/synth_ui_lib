@@ -65,6 +65,7 @@ set(UI_SOURCES
     src/ui/hbar.cpp
     src/ui/textfield.cpp
     src/ui/keyboard.cpp
+    src/ui/piano_keyboard.cpp
     src/ui/graph.cpp
     src/ui/dropdown.cpp
     src/ui/stepgrid.cpp

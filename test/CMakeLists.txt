@@ -39,6 +39,7 @@ add_executable(test_synth_ui
   test_meter_array.cpp
   test_waveform.cpp
   test_waveform_view.cpp
+  test_piano_keyboard.cpp
 )
 target_link_libraries(test_synth_ui PRIVATE synth_ui_lib_static GTest::gtest_main)
 target_include_directories(test_synth_ui PRIVATE ${CMAKE_SOURCE_DIR}/src)
