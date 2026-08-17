@@ -44,6 +44,7 @@
 #include "spectrum_view.h"
 #include "mod_matrix.h"
 #include "tooltip.h"
+#include "list_view.h"
 #include "easing.h"
 #include "tween.h"
 #include "anim.h"

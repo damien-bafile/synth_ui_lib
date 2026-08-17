@@ -32,6 +32,7 @@ All widget classes live under =src/ui/=.
 | tabbar.h / tabbar.cpp    | TabBar          | Full-width tab bar (≤6 equal tabs). Active tab fills with accent. Reports via wasSelected(). |
 | keyboard.h / keyboard.cpp| Keyboard        | Full QWERTY on-screen keyboard. 4 layers (lower/upper/symbols-1/symbols-2). Cursor, selection, backspace, space, return. |
 | piano_keyboard.h / piano_keyboard.cpp | PianoKeyboard | On-screen piano over a contiguous MIDI note range (≤32 keys). White keys full-height, black keys drawn on top (inset, shorter, hit-tested first). Reports note-on/off via wasNoteTriggered()/wasNoteReleased(). |
+| list_view.h / list_view.cpp | ListView | Scrollable item list / patch browser (≤64 items, generalizes Dropdown's fixed 16-item cap). Vertical-drag scrolling. Optional reorder mode: long-press then drag swaps rows past a half-row threshold; getOrder() exposes the resulting display order. |
 | hbar.h / hbar.cpp        | HorizontalBar   | Progress/level bar + static drawCenteredCents() for bipolar displays (e.g. detune). Touch/drag adjustable. |
 | xy_pad.h / xy_pad.cpp    | XYPad           | 2D touch pad. 3 marker styles (CIRCLE, CROSSHAIR, SQUARE). Flip-Y, grid, axis colors. Reports normalized X/Y fractions. |
 | radial_dial.h / radial_dial.cpp | RadialDial | Rotary knob drawn as a circular arc. Configurable arc thickness, ticks (outward/inward/both/off), start angle/sweep, stepped values, font scale, label position, suffix, sign display. Most configurable widget. |

@@ -87,6 +87,7 @@ set(UI_SOURCES
     src/ui/spectrum_view.cpp
     src/ui/mod_matrix.cpp
     src/ui/tooltip.cpp
+    src/ui/list_view.cpp
     src/ui/anim.cpp
 )
 
