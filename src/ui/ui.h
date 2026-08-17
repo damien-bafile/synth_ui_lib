@@ -43,6 +43,7 @@
 #include "waveform_view.h"
 #include "spectrum_view.h"
 #include "mod_matrix.h"
+#include "tooltip.h"
 #include "easing.h"
 #include "tween.h"
 #include "anim.h"

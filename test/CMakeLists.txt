@@ -42,6 +42,7 @@ add_executable(test_synth_ui
   test_piano_keyboard.cpp
   test_spectrum_view.cpp
   test_mod_matrix.cpp
+  test_tooltip.cpp
 )
 target_link_libraries(test_synth_ui PRIVATE synth_ui_lib_static GTest::gtest_main)
 target_include_directories(test_synth_ui PRIVATE ${CMAKE_SOURCE_DIR}/src)

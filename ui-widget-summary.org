@@ -62,6 +62,7 @@ All widget classes live under =src/ui/=.
 | infobar.h / infobar.cpp        | InfoBar         | Single-row status bar with left/right text, multi-segment colored text support. |
 | frame.h                        | Frame           | 1px rectangular outline (not Widget-derived).                    |
 | divider.h                      | Divider         | Horizontal or vertical rule (configurable thickness).            |
+| tooltip.h / tooltip.cpp        | Tooltip         | Floating text bubble via the overlay system (framebuffer.h's reserved "future" tooltip headroom). Not touch-interactive; a screen shows it from another widget's onLongPress(). |
 
 * Animation System (value producers for widget inputs)
 
