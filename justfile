@@ -44,6 +44,12 @@ test *args:
     cmake --build {{ build_dir }} -j
     ctest --test-dir {{ build_dir }} --output-on-failure {{ args }}
 
+# Configure and build tests with ASan+UBSan, then run them
+test-asan *args:
+    cmake -S . -B {{ build_dir }}/asan -G Ninja -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug -DENABLE_SANITIZERS=ON
+    cmake --build {{ build_dir }}/asan -j
+    ctest --test-dir {{ build_dir }}/asan --output-on-failure {{ args }}
+
 ####################
 # Code Quality
 ####################
@@ -59,6 +65,14 @@ format-check:
 # Format code in-place
 format:
     find src/ -name '*.cpp' -o -name '*.h' | xargs clang-format -i
+
+####################
+# Documentation
+####################
+
+# Generate API docs (requires doxygen)
+docs:
+    doxygen Doxyfile
 
 ####################
 # Information

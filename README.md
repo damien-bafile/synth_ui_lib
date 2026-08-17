@@ -207,22 +207,48 @@ sequencer.handleTouch(touch);
 
 ## Widget Gallery
 
+Interactive controls:
+
 | Widget | Purpose | Use Case |
 |--------|---------|----------|
 | **Button** | Momentary/latching input | Transport controls, mode selection |
 | **Slider** | Continuous parameter (H/V) | Volume, cutoff frequency, LFO rate |
+| **VUSlider** | Slider with integrated VU meter | Channel/track volume with level feedback |
 | **Toggle** | Binary on/off (compact) | Mute, effect bypass |
 | **Checkbox** | Boolean selection | Settings, feature flags |
 | **Radio** | Single-choice from group | Algorithm selection, waveform pick |
-| **Dropdown** | Multi-option menu (4 styles) | Voice select, scale mode, routing |
-| **Panel** | Container/grouping | Section headers, visual grouping |
 | **TextField** | Text input + display | Patch names, numeric entry |
-| **StepGrid** | 2D sequencer/pattern | Step sequencer, drum machine |
-| **Graph** | ADSR envelope editor | Amplitude/filter envelopes |
+| **Dropdown** | Multi-option menu (4 styles) | Voice select, scale mode, routing |
+| **TabBar** | Full-width tab strip | Screen/page navigation |
+| **Keyboard** | On-screen QWERTY keyboard | Patch naming, text entry |
 | **HBar** | Progress/metering | Pitch cents display, simple meter |
-| **Waveform** | Waveform visualization | Oscillator display, LFO preview |
-| **MeterArray** | Multi-channel levels | Stereo/surround metering, mixer |
 | **XYPad** | 2D parameter control | Filter sweep, morphing, mixing |
+| **RadialDial** | Rotary knob | Any single continuous parameter |
+
+Display / data visualization:
+
+| Widget | Purpose | Use Case |
+|--------|---------|----------|
+| **Panel** | Titled bordered container | Section headers, visual grouping |
+| **Graph** | ADSR envelope editor | Amplitude/filter envelopes |
+| **StepGrid** | 2D sequencer/pattern | Step sequencer, drum machine |
+| **Waveform** | Oscillator waveform display | Oscillator display, LFO preview |
+| **WaveformView** | Audio sample waveform | Sample editor, playback preview |
+| **MeterArray** | Multi-channel levels | Stereo/surround metering, mixer |
+| **VoiceMeter** | Per-voice activity indicator | Polyphony/voice-allocation display |
+| **Label** | Aligned text | Any static or dynamic text readout |
+| **PageIndicator** | "< PG p/c >" page readout | Multi-page screen navigation |
+
+Composite / overlay:
+
+| Widget | Purpose | Use Case |
+|--------|---------|----------|
+| **PopupMenu** | Floating context menu | Right-click-style option lists |
+| **PopupSlider** | Floating slider window | Precise value entry over a compact control |
+| **TransportBar** | Full-width transport strip | Play/stop/rec, BPM, track status |
+| **InfoBar** | Single-row status bar | Left/right status text |
+| **Frame** | 1px rectangular outline | Lightweight grouping without a title |
+| **Divider** | Horizontal/vertical rule | Visual separation between sections |
 
 ## Animation
 

@@ -1,8 +1,15 @@
 cmake_minimum_required(VERSION 3.16)
-project(synth_ui_lib LANGUAGES CXX)
+project(synth_ui_lib VERSION 1.0.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# ── Sanitizers ─────────────────────────────────────────────────────────
+option(ENABLE_SANITIZERS "Build with AddressSanitizer + UndefinedBehaviorSanitizer" OFF)
+if(ENABLE_SANITIZERS)
+  add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
+  add_link_options(-fsanitize=address,undefined)
+endif()
 
 # ── Tests ──────────────────────────────────────────────────────────────
 option(BUILD_TESTS "Build unit tests" ON)
@@ -11,6 +18,7 @@ if(BUILD_TESTS)
   enable_testing()
   include(FetchContent)
   set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
+  set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
   FetchContent_Declare(
     googletest
     GIT_REPOSITORY https://github.com/google/googletest.git
@@ -79,7 +87,10 @@ set(UI_SOURCES
 )
 
 add_library(${PROJECT_NAME} SHARED ${UI_SOURCES})
-target_include_directories(${PROJECT_NAME} PUBLIC src)
+target_include_directories(${PROJECT_NAME} PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+  $<INSTALL_INTERFACE:include>
+)
 
 # Cross-platform library settings
 if(APPLE)
@@ -103,7 +114,51 @@ else()
 endif()
 
 add_library(${PROJECT_NAME}_static STATIC ${UI_SOURCES})
-target_include_directories(${PROJECT_NAME}_static PUBLIC src)
+target_include_directories(${PROJECT_NAME}_static PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+  $<INSTALL_INTERFACE:include>
+)
 set_target_properties(${PROJECT_NAME}_static PROPERTIES
   OUTPUT_NAME synth_ui_static
 )
+
+# ── Install / package config ──────────────────────────────────────────
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
+install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_static
+  EXPORT ${PROJECT_NAME}Targets
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+install(DIRECTORY src/ui/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/ui
+  FILES_MATCHING PATTERN "*.h"
+)
+install(EXPORT ${PROJECT_NAME}Targets
+  FILE ${PROJECT_NAME}Targets.cmake
+  NAMESPACE synth_ui::
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+)
+
+write_basic_package_version_file(
+  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+  VERSION ${PROJECT_VERSION}
+  COMPATIBILITY SameMajorVersion
+)
+configure_package_config_file(
+  cmake/${PROJECT_NAME}Config.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+)
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+)
+
+# ── Examples ───────────────────────────────────────────────────────────
+option(BUILD_EXAMPLES "Build example programs" OFF)
+if(BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif()

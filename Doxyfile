@@ -1,0 +1,17 @@
+PROJECT_NAME           = "synth_ui_lib"
+PROJECT_BRIEF          = "Synth UI widget library for embedded and desktop"
+OUTPUT_DIRECTORY       = docs/api
+
+INPUT                  = src/ui
+FILE_PATTERNS          = *.h *.cpp
+RECURSIVE              = NO
+EXTRACT_ALL             = YES
+EXTRACT_PRIVATE         = NO
+EXTRACT_STATIC          = NO
+
+GENERATE_HTML           = YES
+GENERATE_LATEX          = NO
+GENERATE_MAN             = NO
+
+QUIET                    = YES
+WARN_IF_UNDOCUMENTED     = NO
