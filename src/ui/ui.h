@@ -42,6 +42,7 @@
 #include "voice_meter.h"
 #include "waveform_view.h"
 #include "spectrum_view.h"
+#include "mod_matrix.h"
 #include "easing.h"
 #include "tween.h"
 #include "anim.h"

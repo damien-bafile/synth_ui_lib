@@ -85,6 +85,7 @@ set(UI_SOURCES
     src/ui/voice_meter.cpp
     src/ui/waveform_view.cpp
     src/ui/spectrum_view.cpp
+    src/ui/mod_matrix.cpp
     src/ui/anim.cpp
 )
 
