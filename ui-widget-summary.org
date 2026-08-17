@@ -65,6 +65,7 @@ All widget classes live under =src/ui/=.
 | frame.h                        | Frame           | 1px rectangular outline (not Widget-derived).                    |
 | divider.h                      | Divider         | Horizontal or vertical rule (configurable thickness).            |
 | tooltip.h / tooltip.cpp        | Tooltip         | Floating text bubble via the overlay system (framebuffer.h's reserved "future" tooltip headroom). Not touch-interactive; a screen shows it from another widget's onLongPress(). |
+| midi_learn_badge.h / midi_learn_badge.cpp | MidiLearnBadge | Small composable badge for whatever control is MIDI-learn-armed. Idle ring, or pulses active/inactive color on a caller-driven millisecond clock (PULSE_PERIOD_MS) with an "L" glyph. Not touch-interactive, not tied to any one widget. |
 
 * Animation System (value producers for widget inputs)
 

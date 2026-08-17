@@ -89,6 +89,7 @@ set(UI_SOURCES
     src/ui/tooltip.cpp
     src/ui/list_view.cpp
     src/ui/spinbox.cpp
+    src/ui/midi_learn_badge.cpp
     src/ui/anim.cpp
 )
 

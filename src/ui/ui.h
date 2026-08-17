@@ -46,6 +46,7 @@
 #include "tooltip.h"
 #include "list_view.h"
 #include "spinbox.h"
+#include "midi_learn_badge.h"
 #include "easing.h"
 #include "tween.h"
 #include "anim.h"

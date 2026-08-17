@@ -18,9 +18,17 @@ All notable changes to this project are documented in this file.
 - `VUSlider` (`vu_slider.h`/`.cpp`) is now actually compiled into the
   library — it previously existed on disk but wasn't wired into
   `CMakeLists.txt` or `ui.h`.
-- Unit test coverage extended to the widget layer (previously only
-  base/infra classes had tests): `Button`, `Toggle`, `Checkbox`, `Radio`,
-  `Slider`, `VUSlider`, `Label`, `PageIndicator`.
+- Unit test coverage extended to every widget class (previously only
+  base/infra classes had tests, then 8 core interactive widgets): all
+  ~25 pre-existing widgets now have unit tests, following the same
+  construct/simulate-touch/assert pattern.
+- Added 8 new widgets closing gaps from the initial audit:
+  `PianoKeyboard` (note-range piano input), `SpectrumView` (spectrum/FFT
+  display), `ModMatrix` (modulation routing grid), `Tooltip` (floating
+  text bubble), `ListView` (scrollable list with optional drag reorder),
+  `Spinbox` (stepped numeric field), `MidiLearnBadge` (pulsing MIDI-learn
+  indicator). Each has its own unit tests and a `ui-widget-summary.org`
+  entry.
 
 ## [1.0.0]
 

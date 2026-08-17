@@ -224,6 +224,9 @@ Interactive controls:
 | **HBar** | Progress/metering | Pitch cents display, simple meter |
 | **XYPad** | 2D parameter control | Filter sweep, morphing, mixing |
 | **RadialDial** | Rotary knob | Any single continuous parameter |
+| **PianoKeyboard** | On-screen piano over a note range | Note/pitch input, chord entry |
+| **ListView** | Scrollable item list, optional drag reorder | Patch browser, track/preset lists |
+| **Spinbox** | Stepped numeric field ("[-] value [+]") | Octave, semitone, integer parameters |
 
 Display / data visualization:
 
@@ -234,6 +237,7 @@ Display / data visualization:
 | **StepGrid** | 2D sequencer/pattern | Step sequencer, drum machine |
 | **Waveform** | Oscillator waveform display | Oscillator display, LFO preview |
 | **WaveformView** | Audio sample waveform | Sample editor, playback preview |
+| **SpectrumView** | Spectrum/FFT magnitude display | Frequency analyzer, EQ visualization |
 | **MeterArray** | Multi-channel levels | Stereo/surround metering, mixer |
 | **VoiceMeter** | Per-voice activity indicator | Polyphony/voice-allocation display |
 | **Label** | Aligned text | Any static or dynamic text readout |
@@ -249,6 +253,9 @@ Composite / overlay:
 | **InfoBar** | Single-row status bar | Left/right status text |
 | **Frame** | 1px rectangular outline | Lightweight grouping without a title |
 | **Divider** | Horizontal/vertical rule | Visual separation between sections |
+| **ModMatrix** | Modulation routing grid | Source×destination mod routing |
+| **Tooltip** | Floating text bubble | Long-press value/parameter hints |
+| **MidiLearnBadge** | Pulsing MIDI-learn indicator | Marking a control as MIDI-learn-armed |
 
 ## Animation
 
