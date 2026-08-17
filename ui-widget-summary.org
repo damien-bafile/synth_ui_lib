@@ -45,6 +45,7 @@ All widget classes live under =src/ui/=.
 | stepgrid.h / stepgrid.cpp      | StepGrid        | Step sequencer grid (≤32 steps × 8 tracks). 5 styles: SQUARES, BARS, DOTS, STRIPS, GLOW. Velocity bars, note labels, playhead highlight. Touch toggles steps. |
 | waveform.h / waveform.cpp      | Waveform        | Oscillator waveform display: SINE, SQUARE, TRIANGLE, SAWTOOTH, CUSTOM. Configurable amplitude/frequency. Optional grid. |
 | waveform_view.h / waveform_view.cpp | WaveformView | Audio sample waveform (min/max per pixel, cached). Placeholder when empty. drawMarker() for playhead. |
+| spectrum_view.h / spectrum_view.cpp | SpectrumView | Spectrum/FFT magnitude display (≤32 bins). One bar per bin + per-bin peak-hold line that decays across draw() calls (same technique as VUSlider). Draw-only. |
 | meter_array.h / meter_array.cpp| MeterArray      | Multi-channel VU meter. VERTICAL, HORIZONTAL, or CIRCULAR styles. Peak hold. Green→orange→red color transitions (METER_LOW/MID/HIGH, fixed across themes). |
 | voice_meter.h / voice_meter.cpp| VoiceMeter      | Per-voice activity indicator boxes. Border: NONE, ACTIVE_ONLY, or ALL. |
 | label.h / label.cpp            | Label           | Text label with LEFT/CENTER/RIGHT/VERTICAL alignment.            |

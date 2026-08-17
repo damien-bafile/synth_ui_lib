@@ -84,6 +84,7 @@ set(UI_SOURCES
     src/ui/tabbar.cpp
     src/ui/voice_meter.cpp
     src/ui/waveform_view.cpp
+    src/ui/spectrum_view.cpp
     src/ui/anim.cpp
 )
 
