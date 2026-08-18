@@ -11,7 +11,7 @@ uint16_t BG_DARK     = RGB565(17,  17,  27);   // crust
 uint16_t BG_MID      = RGB565(24,  24,  37);   // mantle
 uint16_t BG_SURFACE  = RGB565(30,  30,  46);   // base
 uint16_t TEXT        = RGB565(205, 214, 244);
-uint16_t TEXT_DIM    = RGB565(127, 132, 156);  // overlay1
+uint16_t TEXT_DIM    = RGB565(190, 195, 215);  // overlay1, brightened for 4.5:1+ contrast on BG_MID/BG_SURFACE
 uint16_t ACCENT_1    = RGB565(243, 139, 168);  // red
 uint16_t ACCENT_2    = RGB565(116, 199, 236);  // sapphire
 uint16_t ACCENT_3    = RGB565(203, 166, 247);  // mauve
@@ -54,7 +54,7 @@ static const Palette k_mocha = {
     RGB565(69, 71, 90), RGB565(108, 112, 134), RGB565(166, 173, 200),
     RGB565(180, 190, 254),
     RGB565(17, 17, 27), RGB565(24, 24, 37), RGB565(30, 30, 46),
-    RGB565(205, 214, 244), RGB565(127, 132, 156),
+    RGB565(205, 214, 244), RGB565(190, 195, 215),
     RGB565(243, 139, 168), RGB565(116, 199, 236),
     RGB565(203, 166, 247), RGB565(166, 227, 161),
     RGB565(249, 226, 175), RGB565(249, 226, 175), RGB565(235, 160, 172),

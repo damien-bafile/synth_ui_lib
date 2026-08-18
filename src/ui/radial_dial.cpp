@@ -25,8 +25,11 @@ RadialDial::RadialDial(int x, int y, int radius,
 }
 
 void RadialDial::setBounds(int x, int y, int w, int h) noexcept {
-    x_ = x; y_ = y; w_ = w; h_ = h;
+    // draw()/isInside() key x_,y_ off as the pixel *center*, but this method's
+    // contract (like every other Widget) takes a top-left x,y — convert here so
+    // callers (including the constructor) can keep passing top-left+size.
     radius_ = std::min(w, h) / 2;
+    x_ = x + radius_; y_ = y + radius_; w_ = w; h_ = h;
 }
 
 void RadialDial::setColors(uint16_t fg, uint16_t bg, uint16_t track) noexcept {
