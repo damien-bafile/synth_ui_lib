@@ -9,6 +9,18 @@ HorizontalBar::HorizontalBar(int x, int y, int w, int h,
 }
 
 void HorizontalBar::draw(Framebuffer& fb, float fraction) {
+    if (bipolar_) {
+        if (fraction < -1.0f) fraction = -1.0f;
+        if (fraction > 1.0f) fraction = 1.0f;
+        fb.fillRect(x_, y_, w_, h_, bg_);
+        fb.drawRect(x_, y_, w_, h_, fg_);
+        int center = x_ + w_ / 2;
+        int barW = static_cast<int>((w_ / 2) * fraction);
+        if (barW > 0)      fb.fillRect(center, y_ + 1, barW, h_ - 2, fg_);
+        else if (barW < 0) fb.fillRect(center + barW, y_ + 1, -barW, h_ - 2, fg_);
+        return;
+    }
+
     if (fraction < 0.0f) fraction = 0.0f;
     if (fraction > 1.0f) fraction = 1.0f;
 
@@ -45,6 +57,14 @@ bool HorizontalBar::onTouchBegan(const TouchEvent& event) {
 }
 
 void HorizontalBar::onDragMoved(const TouchEvent& event, int /*dx*/, int /*dy*/) {
+    if (bipolar_) {
+        float f = (static_cast<float>(event.x - x_) / width()) * 2.0f - 1.0f;
+        if (f < -1.0f) f = -1.0f;
+        if (f > 1.0f) f = 1.0f;
+        fraction_ = f;
+        return;
+    }
+
     float frac = (float)(event.x - x()) / width();
     if (frac < 0.0f) frac = 0.0f;
     if (frac > 1.0f) frac = 1.0f;

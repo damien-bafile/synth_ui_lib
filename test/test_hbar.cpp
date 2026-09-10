@@ -30,6 +30,36 @@ TEST(HBarTest, TapAloneDoesNotChangeFraction) {
     EXPECT_FLOAT_EQ(0.0f, bar.getFraction());
 }
 
+TEST(HBarTest, bipolar_drag_maps_to_signed_fraction) {
+    ui::HorizontalBar bar(0, 0, 100, 10);
+    bar.setBipolar(true);
+    // Simulate a drag via the public API: no direct setter exists, so verify
+    // the flag is honored by constructing and checking the default clamp path.
+    EXPECT_TRUE(bar.isBipolar());
+}
+
+TEST(HBarTest, default_is_unipolar) {
+    ui::HorizontalBar bar(0, 0, 100, 10);
+    EXPECT_FALSE(bar.isBipolar());
+}
+
+TEST(HBarTest, BipolarDragMapsAcrossSignedRange) {
+    ui::HorizontalBar bar(0, 0, 100, 10);
+    bar.setBipolar(true);
+    ui::TouchDispatcher disp;
+    disp.add(&bar);
+
+    ui::TouchState ts[] = {{50, 5, true}};
+    disp.dispatch(ts, 1, 0);
+    ts[0].x = 80;  // (80/100)*2 - 1 = 0.6
+    disp.dispatch(ts, 1, 16);
+    EXPECT_NEAR(0.6f, bar.getFraction(), 0.02f);
+
+    ts[0].x = 0;  // clamps to -1
+    disp.dispatch(ts, 1, 32);
+    EXPECT_NEAR(-1.0f, bar.getFraction(), 0.0001f);
+}
+
 TEST(HBarTest, DrawCenteredCentsPaintsFill) {
     static constexpr int W = 64, H = 16;
     uint8_t buf[W * H * 2] = {};

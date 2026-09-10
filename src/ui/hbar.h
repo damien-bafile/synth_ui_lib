@@ -15,6 +15,9 @@ public:
 
     float getFraction() const noexcept { return fraction_; }
 
+    void setBipolar(bool on) noexcept { bipolar_ = on; }
+    bool isBipolar() const noexcept { return bipolar_; }
+
     static void drawCenteredCents(Framebuffer& fb, int x, int y, int w, int h,
                                   float valCents, float maxCents,
                                   uint16_t fill, uint16_t bg);
@@ -31,6 +34,7 @@ public:
 private:
     uint16_t fg_, bg_;
     float fraction_ = 0.0f;
+    bool bipolar_ = false;
 
     bool onTouchBegan(const TouchEvent& event) override;
     void onDragMoved(const TouchEvent& event, int dx, int dy) override;
