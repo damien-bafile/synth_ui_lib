@@ -14,6 +14,7 @@ public:
     void draw(Framebuffer& fb, float fraction);
 
     float getFraction() const noexcept { return fraction_; }
+    void setFraction(float f) noexcept { fraction_ = f; }
 
     void setBipolar(bool on) noexcept { bipolar_ = on; }
     bool isBipolar() const noexcept { return bipolar_; }

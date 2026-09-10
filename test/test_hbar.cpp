@@ -43,6 +43,16 @@ TEST(HBarTest, default_is_unipolar) {
     EXPECT_FALSE(bar.isBipolar());
 }
 
+TEST(HBarTest, setFraction_round_trips) {
+    ui::HorizontalBar bar(0, 0, 100, 10);
+    bar.setFraction(0.75f);
+    EXPECT_FLOAT_EQ(0.75f, bar.getFraction());
+
+    bar.setBipolar(true);
+    bar.setFraction(-0.4f);
+    EXPECT_FLOAT_EQ(-0.4f, bar.getFraction());
+}
+
 TEST(HBarTest, BipolarDragMapsAcrossSignedRange) {
     ui::HorizontalBar bar(0, 0, 100, 10);
     bar.setBipolar(true);
