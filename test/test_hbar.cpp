@@ -30,14 +30,6 @@ TEST(HBarTest, TapAloneDoesNotChangeFraction) {
     EXPECT_FLOAT_EQ(0.0f, bar.getFraction());
 }
 
-TEST(HBarTest, bipolar_drag_maps_to_signed_fraction) {
-    ui::HorizontalBar bar(0, 0, 100, 10);
-    bar.setBipolar(true);
-    // Simulate a drag via the public API: no direct setter exists, so verify
-    // the flag is honored by constructing and checking the default clamp path.
-    EXPECT_TRUE(bar.isBipolar());
-}
-
 TEST(HBarTest, default_is_unipolar) {
     ui::HorizontalBar bar(0, 0, 100, 10);
     EXPECT_FALSE(bar.isBipolar());
@@ -85,4 +77,23 @@ TEST(HBarTest, DrawCenteredCentsPaintsFill) {
         if (buf[i * 2 + 0] == 0xFF && buf[i * 2 + 1] == 0xFF) { found = true; break; }
     }
     EXPECT_TRUE(found);
+}
+
+TEST(HBarTest, BipolarDrawPaintsRightOfCenterForPositive) {
+    static constexpr int W = 64, H = 16;
+    uint8_t buf[W * H * 2] = {};
+    ui::Framebuffer fb(buf, W, H);
+    static constexpr uint16_t FILL = 0xFFFF, BG = 0x0000;
+    fb.fillScreen(BG);
+
+    ui::HorizontalBar bar(0, 0, W, H, FILL, BG);
+    bar.setBipolar(true);
+    bar.draw(fb, 0.5f);  // fill from center to center + W/4
+
+    auto px = [&](int x, int y) {
+        int i = (y * W + x) * 2;
+        return static_cast<uint16_t>(buf[i] | (buf[i + 1] << 8));
+    };
+    EXPECT_EQ(FILL, px(W / 2 + 4, H / 2));  // right of center painted
+    EXPECT_EQ(BG,   px(W / 2 - 4, H / 2));  // left of center untouched
 }
